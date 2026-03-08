@@ -3,946 +3,988 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cachelyze — Stop re-exploring. Start caching.</title>
-  <meta name="description" content="Every agent session wastes tokens re-reading your codebase. cachelyze runs a full analysis once per commit, caches it, and serves it instantly." />
+  <title>cachelyze — Cached codebase analysis for AI agents</title>
+  <meta name="description" content="Stop re-exploring. Start caching. Run a full codebase analysis once per git commit, cache it, and serve it instantly to AI agents." />
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="cachelyze — Cached codebase analysis for AI agents" />
+  <meta property="og:description" content="Stop re-exploring. Start caching. Run a full codebase analysis once per git commit." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cachelyze.com" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="cachelyze — Cached codebase analysis for AI agents" />
+  <meta name="twitter:description" content="Stop re-exploring. Start caching." />
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     :root {
-      --bg:          rgb(245, 239, 230);
-      --card:        rgb(237, 229, 216);
-      --card-inner:  rgb(229, 220, 207);
-      --heading:     rgb(45, 27, 14);
-      --body:        rgb(61, 43, 21);
-      --muted:       rgb(122, 92, 58);
-      --caption:     rgb(160, 146, 111);
-      --accent:      rgb(187, 168, 138);
-      --icon:        rgb(196, 180, 154);
-      --divider:     rgba(122, 92, 58, 0.15);
-      --term-bg:     rgb(35, 22, 10);
-      --term-text:   rgb(220, 205, 180);
-      --term-prompt: rgb(187, 168, 138);
-      --term-green:  rgb(100, 160, 80);
-      --term-amber:  rgb(210, 160, 60);
-      --syn-kw:      rgb(180, 120, 60);
-      --syn-str:     rgb(100, 140, 80);
-      --syn-comment: rgb(160, 146, 111);
-      --syn-type:    rgb(150, 110, 170);
-      --syn-fn:      rgb(90, 140, 180);
+      --bg: #f0f9ff;
+      --card: #e0f2fe;
+      --card-inner: #bae6fd;
+      --heading: #0c4a6e;
+      --body: #075985;
+      --muted: #0284c7;
+      --caption: #38bdf8;
+      --accent: #7dd3fc;
+      --icon: #7dd3fc;
+      --divider: rgba(2, 132, 199, 0.15);
+      --term-bg: #e0f2fe;
+      --term-text: #0c4a6e;
+      --term-prompt: #38bdf8;
+      --json-key: #0284c7;
     }
-
-    html { scroll-behavior: smooth; }
-
+    
     body {
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--body);
-      font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 15px;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
     }
-
-    a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
-    a:hover { color: var(--heading); }
-
-    /* ───── Layout ───── */
+    
+    /* Navbar - absolute positioned, right-aligned, vertical */
+    .navbar-desktop {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      z-index: 10;
+    }
+    
+    .navbar-desktop a {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    
+    .navbar-desktop a:hover { color: var(--heading); }
+    
+    @media (max-width: 768px) {
+      .navbar-desktop {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding: 16px 20px;
+        gap: 24px;
+        border-bottom: 1px solid var(--divider);
+      }
+    }
+    
     .container {
       max-width: 950px;
       margin: 0 auto;
       padding: 0 40px 80px;
     }
-
-    /* ───── Navbar ───── */
-    nav {
-      max-width: 950px;
-      margin: 0 auto;
-      padding: 0 40px;
-      height: 60px;
+    
+    /* Hero Section */
+    .hero-section {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--divider);
+      gap: 60px;
+      padding-top: 40px;
+      padding-bottom: 80px;
     }
-
-    .nav-wordmark {
-      font-family: 'IBM Plex Mono', monospace;
-      font-weight: 600;
-      font-size: 15px;
-      color: var(--heading);
-      letter-spacing: -0.5px;
+    
+    @media (max-width: 768px) {
+      .hero-section {
+        flex-direction: column;
+        gap: 40px;
+      }
     }
-    .nav-wordmark:hover { color: var(--heading); }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      list-style: none;
+    
+    .hero-image {
+      width: 200px;
+      height: 200px;
+      flex-shrink: 0;
     }
-
-    .nav-links a {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--muted);
-      letter-spacing: 0.2px;
+    
+    @media (max-width: 768px) {
+      .hero-image { width: 150px; height: 150px; }
     }
-    .nav-links a:hover { color: var(--heading); }
-
-    /* ───── Hero ───── */
-    .hero {
-      padding: 72px 0 60px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0;
+    
+    @media (max-width: 480px) {
+      .hero-image { width: 120px; height: 120px; }
     }
-
-    .hero-icon {
-      width: 80px;
-      height: 80px;
-      background: var(--card);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 32px;
-      border: 1px solid var(--divider);
+    
+    .hero-phonetic {
+      font-size: 14px;
+      color: var(--caption);
+      font-style: italic;
+      margin-bottom: 8px;
     }
-
-    .hero-icon svg {
-      color: var(--icon);
-    }
-
-    h1.hero-title {
-      font-family: 'IBM Plex Mono', monospace;
+    
+    .hero-title {
       font-size: 62px;
       font-weight: 600;
-      letter-spacing: -2px;
+      line-height: 1;
       color: var(--heading);
-      line-height: 1.05;
-      margin-bottom: 18px;
+      margin: 0 0 20px 0;
+      letter-spacing: -2px;
     }
-
-    .hero-tagline {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 17px;
-      font-weight: 400;
-      color: var(--muted);
-      letter-spacing: -0.3px;
-      margin-bottom: 20px;
-    }
-
-    .hero-body {
-      font-size: 15px;
-      color: var(--body);
-      max-width: 580px;
+    
+    .hero-description {
+      font-size: 20px;
       line-height: 1.7;
+      color: var(--body);
+      margin: 0;
     }
-
-    /* ───── Section titles ───── */
-    .section-title {
-      font-family: 'IBM Plex Mono', monospace;
+    
+    .hero-description strong {
+      font-weight: 600;
+      color: var(--heading);
+    }
+    
+    /* Section titles */
+    h2 {
       font-size: 22px;
       font-weight: 600;
       color: var(--heading);
-      letter-spacing: -0.5px;
-      margin-bottom: 28px;
+      margin-bottom: 20px;
     }
-
-    section { padding: 60px 0 0; }
-
-    /* ───── Terminal ───── */
-    .terminal-card {
+    
+    section {
+      padding-bottom: 80px;
+    }
+    
+    /* Cards */
+    .card {
       background: var(--card);
       border-radius: 16px;
       padding: 24px;
-      border: 1px solid var(--divider);
     }
-
-    .terminal-window {
-      background: var(--term-bg);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .terminal-titlebar {
-      background: rgb(50, 32, 15);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-    }
-    .dot-red   { background: rgb(255, 95, 86);  opacity: 0.5; }
-    .dot-amber { background: rgb(255, 189, 46); opacity: 0.5; }
-    .dot-green { background: rgb(39, 201, 63);  opacity: 0.5; }
-
-    .terminal-body {
-      padding: 20px 22px 24px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px;
-      line-height: 1.7;
+    
+    /* Terminal Demo */
+    .terminal-demo {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 17px;
+      font-weight: 500;
       color: var(--term-text);
-      min-height: 220px;
+      line-height: 1.8;
+      min-height: 174px;
     }
-
-    .term-prompt { color: var(--term-prompt); }
-    .term-spinner { color: var(--term-amber); }
-    .term-check { color: var(--term-green); }
-    .term-dim { color: rgba(220, 205, 180, 0.45); }
-
-    @keyframes blink {
-      0%, 49% { opacity: 1; }
-      50%, 100% { opacity: 0; }
-    }
-
-    .cursor {
-      display: inline-block;
-      width: 7px;
-      height: 13px;
-      background: var(--term-prompt);
-      vertical-align: text-bottom;
-      animation: blink 1s step-start infinite;
-      margin-left: 1px;
-    }
-
-    /* ───── Code / install blocks ───── */
-    .install-blocks {
+    
+    .terminal-line {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 24px;
+      gap: 8px;
+      align-items: baseline;
     }
-
-    .code-block {
-      background: var(--card);
-      border: 1px solid var(--divider);
-      border-radius: 10px;
-      padding: 13px 16px;
+    
+    .terminal-prompt {
+      color: var(--term-prompt);
+      user-select: none;
+    }
+    
+    .terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1.1em;
+      background: var(--accent);
+      margin-left: 1px;
+      margin-bottom: 1px;
+      vertical-align: text-bottom;
+    }
+    
+    .terminal-spinner {
+      color: var(--accent);
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+    
+    .terminal-output {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    
+    .json-key { color: var(--json-key); }
+    
+    @keyframes terminal-cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    
+    @keyframes terminal-cursor-solid {
+      0%, 100% { opacity: 1; }
+    }
+    
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fade-out {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    .fade-in { animation: fade-in-up 0.3s ease-out forwards; }
+    .fade-out { animation: fade-out 0.4s ease-out forwards; }
+    
+    /* Command Row */
+    .command-row {
+      margin-bottom: 20px;
+    }
+    
+    .command-label {
+      font-size: 12px;
+      color: var(--caption);
+      margin-bottom: 6px;
+    }
+    
+    .command-line {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 8px;
     }
-
-    .code-block code {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px;
-      color: var(--heading);
-      flex: 1;
+    
+    .command-text {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 15px;
+      color: var(--body);
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      flex-wrap: wrap;
     }
-
-    .code-block code .prompt-sym {
-      color: var(--accent);
-      margin-right: 8px;
-      user-select: none;
-    }
-
+    
     .copy-btn {
       background: none;
       border: none;
       cursor: pointer;
-      padding: 4px;
-      color: var(--caption);
-      transition: color 0.15s;
+      padding: 2px;
+      color: var(--accent);
       flex-shrink: 0;
-      line-height: 0;
+      transition: color 0.15s;
     }
+    
     .copy-btn:hover { color: var(--muted); }
-    .copy-btn.copied { color: var(--term-green); }
-
-    .docs-link {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .docs-link:hover { color: var(--heading); }
-
-    /* ───── Features grid ───── */
-    .features-grid {
+    .copy-btn.copied { color: var(--caption); }
+    
+    /* Feature Cards */
+    .feature-grid {
       display: grid;
       gap: 12px;
+      margin-bottom: 12px;
     }
-
-    .features-row-1 {
+    
+    .feature-row-1 {
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 12px;
     }
-
-    .features-row-2 {
+    
+    .feature-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .feature-row-3 {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 12px;
     }
-
+    
+    @media (max-width: 768px) {
+      .feature-row-1,
+      .feature-row-2,
+      .feature-row-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+    
     .feature-card {
       background: var(--card);
-      border: 1px solid var(--divider);
       border-radius: 16px;
-      padding: 28px 28px 32px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      min-height: 120px;
       position: relative;
       overflow: hidden;
     }
-
-    .feature-card-icon-bg {
+    
+    .feature-card-icon {
       position: absolute;
-      bottom: -18px;
-      right: -18px;
+      bottom: 10px;
+      right: 10px;
       color: var(--icon);
-      opacity: 0.08;
-      transform: scale(5);
+      opacity: 0.09;
+      z-index: 0;
+      transform: scale(6) translate(0.4rem, 0.3rem);
       transform-origin: bottom right;
-      pointer-events: none;
-      line-height: 0;
     }
-
-    .feature-card h3 {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 14px;
-      font-weight: 600;
+    
+    .feature-card-title {
+      font-size: 15px;
+      font-weight: 500;
       color: var(--heading);
-      letter-spacing: -0.3px;
-      margin-bottom: 10px;
-      line-height: 1.4;
-    }
-
-    .feature-card p {
-      font-size: 13.5px;
-      color: var(--muted);
-      line-height: 1.65;
+      margin-bottom: 6px;
       position: relative;
       z-index: 1;
     }
-
-    /* ───── Pipeline ───── */
-    .pipeline {
-      display: flex;
-      align-items: stretch;
-      gap: 0;
-      background: var(--card);
-      border: 1px solid var(--divider);
-      border-radius: 16px;
-      padding: 32px 28px;
-      overflow-x: auto;
-    }
-
-    .pipeline-step {
-      flex: 1;
-      min-width: 160px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .pipeline-step-inner {
-      background: var(--card-inner);
-      border: 1px solid var(--divider);
-      border-radius: 999px;
-      padding: 8px 18px;
-      text-align: center;
-      display: inline-block;
-      align-self: flex-start;
-      width: 100%;
-    }
-
-    .pipeline-step-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--heading);
-      letter-spacing: -0.2px;
-      white-space: nowrap;
-    }
-
-    .pipeline-step-sub {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
+    
+    .feature-card-desc {
+      font-size: 13px;
       color: var(--caption);
       line-height: 1.5;
-      padding: 0 4px;
-      margin-top: 8px;
+      position: relative;
+      z-index: 1;
     }
-
-    .pipeline-arrow {
-      display: flex;
-      align-items: flex-start;
-      padding-top: 12px;
-      color: var(--accent);
-      flex-shrink: 0;
-      padding-left: 8px;
-      padding-right: 8px;
+    
+    /* Pipeline */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
     }
-
-    /* ───── SDK code block ───── */
-    .sdk-card {
-      background: var(--card);
-      border: 1px solid var(--divider);
-      border-radius: 16px;
-      overflow: hidden;
+    
+    @media (max-width: 768px) {
+      .pipeline-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
     }
-
-    .sdk-card-header {
-      background: var(--card-inner);
-      padding: 12px 20px;
-      border-bottom: 1px solid var(--divider);
+    
+    .pipeline-step {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
-
-    .sdk-card-header span {
-      font-family: 'IBM Plex Mono', monospace;
+    
+    .pipeline-step-box {
+      background: var(--card-inner);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-height: 58px;
+      justify-content: center;
+    }
+    
+    .pipeline-step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--heading);
+    }
+    
+    .pipeline-step-sub {
       font-size: 11px;
       color: var(--caption);
     }
-
-    .sdk-card-header .file-pill {
-      background: var(--card);
-      border: 1px solid var(--divider);
-      border-radius: 6px;
-      padding: 2px 9px;
-      font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace;
-      color: var(--muted);
+    
+    .pipeline-arrow {
+      color: var(--icon);
+      font-size: 18px;
+      flex-shrink: 0;
     }
-
-    .sdk-code {
-      padding: 24px 24px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12.5px;
-      line-height: 1.8;
-      color: var(--term-text);
-      background: var(--term-bg);
+    
+    @media (max-width: 768px) {
+      .pipeline-arrow {
+        transform: rotate(90deg);
+      }
+    }
+    
+    /* Code block in cards */
+    .code-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      color: var(--body);
+      background: var(--card-inner);
+      border-radius: 10px;
+      padding: 14px 16px;
+      line-height: 1.7;
+      margin-bottom: 16px;
       overflow-x: auto;
-      tab-size: 2;
     }
-
-    .sdk-code .kw   { color: var(--syn-kw); }
-    .sdk-code .str  { color: var(--syn-str); }
-    .sdk-code .cm   { color: var(--syn-comment); font-style: italic; }
-    .sdk-code .ty   { color: var(--syn-type); }
-    .sdk-code .fn   { color: var(--syn-fn); }
-    .sdk-code .pl   { color: var(--term-text); }
-
-    /* ───── CTA ───── */
+    
+    .code-label {
+      font-size: 11px;
+      color: var(--caption);
+      margin-bottom: 6px;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Link styles */
+    .link {
+      font-size: 14px;
+      color: var(--body);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    
+    .link:hover { color: var(--heading); }
+    
+    /* CTA Grid */
     .cta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 40px;
     }
-
-    .cta-card {
-      background: var(--card);
-      border: 1px solid var(--divider);
-      border-radius: 16px;
-      padding: 28px;
+    
+    @media (max-width: 768px) {
+      .cta-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
     }
-
-    .cta-card h3 {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 15px;
+    
+    .cta-divider {
+      border-left: 1px solid var(--divider);
+      padding-left: 40px;
+    }
+    
+    @media (max-width: 768px) {
+      .cta-divider {
+        border-left: none;
+        border-top: 1px solid var(--divider);
+        padding-left: 0;
+        padding-top: 24px;
+      }
+    }
+    
+    .cta-title {
+      font-size: 16px;
       font-weight: 600;
       color: var(--heading);
       margin-bottom: 16px;
-      letter-spacing: -0.3px;
     }
-
-    .cta-install-block {
-      background: var(--card-inner);
-      border: 1px solid var(--divider);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      color: var(--heading);
-      margin-bottom: 14px;
-    }
-
-    .cta-install-block .prompt-sym {
-      color: var(--accent);
-      margin-right: 8px;
-      user-select: none;
-    }
-
-    .cta-card-link {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .cta-card-link:hover { color: var(--heading); }
-
+    
     .doc-links {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-
-    .doc-links li a {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12.5px;
-      color: var(--muted);
+    
+    .doc-links a {
+      font-size: 13px;
+      color: var(--body);
+      text-decoration: none;
+      font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 5px;
     }
-    .doc-links li a:hover { color: var(--heading); }
-
-    .doc-links li a::before {
-      content: '→';
-      color: var(--accent);
-      font-size: 11px;
-      flex-shrink: 0;
-    }
-
-    /* ───── Footer ───── */
+    
+    .doc-links a:hover { color: var(--heading); }
+    
+    /* Footer */
     footer {
+      border-top: 1px solid rgba(102, 102, 102, 0.15);
+      padding: 32px 40px;
       max-width: 950px;
-      margin: 60px auto 0;
-      padding: 0 40px 40px;
-      border-top: 1px solid var(--divider);
-      padding-top: 28px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
     }
-
-    footer .footer-left {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      color: var(--caption);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    
+    @media (max-width: 768px) {
+      footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+      }
     }
-
-    footer .footer-sep {
-      color: var(--divider-solid, rgb(196, 180, 154));
-      opacity: 0.5;
-    }
-
-    footer .footer-links {
-      display: flex;
-      gap: 20px;
-    }
-
-    footer .footer-links a {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
+    
+    .footer-left {
+      font-size: 13px;
       color: var(--caption);
     }
-    footer .footer-links a:hover { color: var(--muted); }
-
-    /* ───── Divider ───── */
-    .section-divider {
-      height: 1px;
-      background: var(--divider);
-      margin: 60px 0 0;
+    
+    .footer-left a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
     }
-
-    /* ───── Responsive ───── */
-    @media (max-width: 700px) {
-      .container { padding: 0 20px 60px; }
-      nav { padding: 0 20px; }
-      h1.hero-title { font-size: 40px; letter-spacing: -1px; }
-      .features-row-1, .features-row-2, .cta-grid { grid-template-columns: 1fr; }
-      .pipeline { flex-direction: column; gap: 12px; }
-      .pipeline-arrow { transform: rotate(90deg); align-self: center; }
-      footer { flex-direction: column; gap: 14px; padding: 0 20px 40px; padding-top: 24px; }
-      .nav-links { gap: 16px; }
+    
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
     }
+    
+    .footer-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .footer-links a:hover { color: var(--heading); }
   </style>
 </head>
 <body>
-
-  <!-- ───── Navbar ───── -->
-  <nav>
-    <a href="/" class="nav-wordmark">cachelyze</a>
-    <ul class="nav-links">
-      <li><a href="https://github.com/your-org/cachelyze#readme">Documentation</a></li>
-      <li><a href="https://github.com/your-org/cachelyze">GitHub</a></li>
-      <li><a href="https://www.npmjs.com/package/cachelyze">npm</a></li>
-    </ul>
+  <!-- Navbar -->
+  <nav class="navbar-desktop">
+    <a href="https://github.com/mateffy/cachelyze">GitHub</a>
+    <a href="https://cachelyze.com">Website</a>
+    <a href="https://mateffy.org">Made by Lukas Mateffy</a>
   </nav>
 
   <div class="container">
-
-    <!-- ───── Hero ───── -->
-    <section class="hero">
-      <div class="hero-icon">
-        <!-- Box / package SVG -->
-        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-          <line x1="12" y1="22.08" x2="12" y2="12"/>
+    <!-- Hero -->
+    <section class="hero-section">
+      <div class="hero-image">
+        <!-- Animated Logo SVG -->
+        <svg viewBox="0 0 200 200" width="200" height="200" class="hero-image">
+          <defs>
+            <linearGradient id="cacheGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#a0926f;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#7a5c3a;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <!-- Box/Package shape -->
+          <rect x="40" y="60" width="120" height="100" rx="12" fill="url(#cacheGrad)" opacity="0.15"/>
+          <rect x="50" y="70" width="100" height="80" rx="8" fill="none" stroke="#7a5c3a" stroke-width="3"/>
+          <path d="M50 90 L100 110 L150 90" fill="none" stroke="#7a5c3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M100 110 L100 150" fill="none" stroke="#7a5c3a" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="100" cy="50" r="25" fill="none" stroke="#a0926f" stroke-width="3" opacity="0.6"/>
+          <path d="M85 50 L95 60 L115 40" fill="none" stroke="#7a5c3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Cache indicator -->
+          <rect x="130" y="130" width="40" height="30" rx="4" fill="#e5dccf" stroke="#7a5c3a" stroke-width="2"/>
+          <text x="150" y="150" font-family="Inter, sans-serif" font-size="12" fill="#7a5c3a" text-anchor="middle" font-weight="600">1s</text>
         </svg>
       </div>
-
-      <h1 class="hero-title">cachelyze</h1>
-      <p class="hero-tagline">Stop re-exploring. Start caching.</p>
-      <p class="hero-body">Every agent session wastes tokens re-reading your codebase. cachelyze runs a full analysis once per commit, caches it, and serves it instantly — then runs a fast diff pass for any uncommitted changes.</p>
+      <div>
+        <div class="hero-phonetic">/ˈkaʃlʌɪz/</div>
+        <h1 class="hero-title">cachelyze</h1>
+        <p class="hero-description">
+          <strong>Stop re-exploring. Start caching.</strong><br/>
+          Every agent session wastes tokens re-reading your codebase.<br/>
+          Run a full analysis once per git commit, cache it, and serve it instantly.
+        </p>
+      </div>
     </section>
 
-    <div class="section-divider"></div>
-
-    <!-- ───── Terminal Animation ───── -->
+    <!-- CLI Demo -->
     <section>
-      <p class="section-title">Get codebase context in your agent in one command</p>
-      <div class="terminal-card">
-        <div class="terminal-window">
-          <div class="terminal-titlebar">
-            <div class="dot dot-red"></div>
-            <div class="dot dot-amber"></div>
-            <div class="dot dot-green"></div>
+      <h2>Get codebase context in your agent in one command</h2>
+      <div class="card" style="height: 222px;">
+        <div class="terminal-demo" id="terminal-demo">
+          <div class="terminal-line">
+            <span class="terminal-prompt">$</span>
+            <span id="typing-text"></span>
+            <span class="terminal-cursor" id="cursor"></span>
           </div>
-          <div class="terminal-body" id="terminal-body">
-            <span class="cursor" id="cursor"></span>
+          <div id="spinner-line" style="display: none;">
+            <div class="terminal-spinner">
+              <span id="spinner-char">⠋</span>
+              <span>Analyzing codebase...</span>
+            </div>
           </div>
+          <div id="output-line" style="display: none;"></div>
         </div>
       </div>
     </section>
 
-    <div class="section-divider"></div>
-
-    <!-- ───── Installation & Quickstart ───── -->
+    <!-- Quickstart -->
     <section>
-      <p class="section-title">Installation &amp; Quickstart</p>
-      <div class="install-blocks">
+      <h2>Installation & Quickstart</h2>
+      <div class="card">
+        <div class="command-row">
+          <div class="command-label">Install globally</div>
+          <div class="command-line">
+            <div class="command-text">
+              <span style="color: var(--accent); user-select: none;">$</span>
+              <span>npm install -g cachelyze</span>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard(this, 'npm install -g cachelyze')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="command-row">
+          <div class="command-label">Run analysis with your preferred harness</div>
+          <div class="command-line">
+            <div class="command-text">
+              <span style="color: var(--accent); user-select: none;">$</span>
+              <span>cachelyze --harness claude</span>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard(this, 'cachelyze --harness claude')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="command-row">
+          <div class="command-label">Ask about specific changes (never cached)</div>
+          <div class="command-line">
+            <div class="command-text" style="white-space: pre-wrap;">
+              <span style="color: var(--accent); user-select: none;">$</span>
+              <span>cachelyze --prompt "explain the auth system"</span>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard(this, 'cachelyze --prompt &quot;explain the auth system&quot;')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div style="margin-top: 24px;">
+          <a href="https://github.com/mateffy/cachelyze#readme" class="link">Read the full documentation →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section>
+      <h2>Features</h2>
+      
+      <div class="feature-row-1">
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">One analysis per commit, served instantly</div>
+          <div class="feature-card-desc">The first run on a commit invokes your AI harness to explore the codebase. Every subsequent call returns it from cache instantly. Switch commits and the right cache entry loads automatically.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">Organic diff analysis</div>
+          <div class="feature-card-desc">Working changes are discovered organically via git tools, producing richer insight than a raw patch.</div>
+        </div>
+      </div>
+      
+      <div class="feature-row-2" style="margin-top: 12px;">
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">Use any LLM harness</div>
+          <div class="feature-card-desc">Supports opencode, claude, codex, aider, and gemini out of the box. Implement HarnessRunner for custom agents.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">Pluggable cache store</div>
+          <div class="feature-card-desc">FsStore for filesystem, MemoryStore for in-process, or implement CacheStore for Redis, S3, or databases.</div>
+        </div>
+      </div>
+      
+      <div class="feature-row-3" style="margin-top: 12px;">
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">Full TypeScript SDK</div>
+          <div class="feature-card-desc">Everything is exported. Use analyze() directly, wire up custom stores and runners.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">Cache expiry with maxAge</div>
+          <div class="feature-card-desc">Treat entries older than a given duration as stale. Automatic re-analysis when needed.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="feature-card-title">Outside repo cache</div>
+          <div class="feature-card-desc">Cache stored in ~/.cache/cachelyze/ so agents don't accidentally read cache files.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section>
+      <h2>How it works</h2>
+      <div class="card">
+        <div class="pipeline-grid">
+          <div class="pipeline-step">
+            <div class="pipeline-step-box">
+              <div class="pipeline-step-title">First call</div>
+              <div class="pipeline-step-sub">git rev-parse HEAD</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="pipeline-step-box">
+              <div class="pipeline-step-title">Analysis runs</div>
+              <div class="pipeline-step-sub">Your harness explores the repo</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="pipeline-step-box">
+              <div class="pipeline-step-title">Cached to disk</div>
+              <div class="pipeline-step-sub">~/.cache/cachelyze/</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="pipeline-step-box">
+              <div class="pipeline-step-title">Future calls</div>
+              <div class="pipeline-step-sub">Instant return + diff pass</div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 14px; color: var(--muted); margin-bottom: 16px; line-height: 1.6;">
+          On first call, cachelyze invokes your configured AI harness to analyze the codebase and writes a dense analysis. 
+          Subsequent calls return it instantly from cache. Working changes are discovered organically via git tools.
+        </p>
+        <a href="https://github.com/mateffy/cachelyze#how-it-works" class="link">How it works in detail →</a>
+      </div>
+    </section>
+
+    <!-- SDK -->
+    <section>
+      <h2>Integrate into your application using the TypeScript SDK</h2>
+      <div class="card">
         <div class="code-block">
-          <code><span class="prompt-sym">$</span>npm install -g cachelyze</code>
-          <button class="copy-btn" onclick="copyCode(this, 'npm install -g cachelyze')" title="Copy">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
+          <div class="code-label">Install the SDK</div>
+          <div><span style="color: var(--accent);">$</span> npm install @cachelyze/core</div>
         </div>
         <div class="code-block">
-          <code><span class="prompt-sym">$</span>cachelyze --harness claude</code>
-          <button class="copy-btn" onclick="copyCode(this, 'cachelyze --harness claude')" title="Copy">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
+          <div style="margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">import</span> { analyze, FsStore } <span class="kw" style="color: #a0926f;">from</span> <span style="color: var(--json-key);">"@cachelyze/core"</span></div>
+          <div style="margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">import type</span> { HarnessRunner, RunRequest, RunResult } <span class="kw" style="color: #a0926f;">from</span> <span style="color: var(--json-key);">"@cachelyze/core"</span></div>
+          <div style="margin-bottom: 12px; color: var(--caption);">// Custom in-process runner — no subprocess needed</div>
+          <div style="margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">class</span> <span style="color: var(--heading); font-weight: 600;">MyAgentRunner</span> <span class="kw" style="color: #a0926f;">implements</span> <span style="color: var(--heading); font-weight: 600;">HarnessRunner</span> {</div>
+          <div style="padding-left: 16px; margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">readonly</span> name = <span style="color: var(--json-key);">"my-agent"</span></div>
+          <div style="padding-left: 16px; margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">async</span> <span style="color: var(--heading); font-weight: 600;">run</span>(req: RunRequest): Promise&lt;RunResult&gt; {</div>
+          <div style="padding-left: 32px; margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">const</span> output = <span class="kw" style="color: #a0926f;">await</span> myAgent.query(req.prompt, { cwd: req.cwd })</div>
+          <div style="padding-left: 32px; margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">return</span> { output }</div>
+          <div style="padding-left: 16px; margin-bottom: 8px;">}</div>
+          <div style="margin-bottom: 8px;">}</div>
+          <div style="margin-bottom: 8px; color: var(--caption);">// Persistent cache + custom runner</div>
+          <div style="margin-bottom: 8px;"><span class="kw" style="color: #a0926f;">const</span> result = <span class="kw" style="color: #a0926f;">await</span> <span style="color: var(--heading); font-weight: 600;">analyze</span>({</div>
+          <div style="padding-left: 16px; margin-bottom: 8px;">runner: <span class="kw" style="color: #a0926f;">new</span> <span style="color: var(--heading); font-weight: 600;">MyAgentRunner</span>(),</div>
+          <div style="padding-left: 16px; margin-bottom: 8px;">store: <span class="kw" style="color: #a0926f;">new</span> <span style="color: var(--heading); font-weight: 600;">FsStore</span>(),</div>
+          <div style="padding-left: 16px; margin-bottom: 8px;">prompt: <span style="color: var(--json-key);">"what changed in the auth layer?"</span>,</div>
+          <div style="padding-left: 16px; margin-bottom: 8px;">maxAge: <span style="color: var(--heading);">2</span> * <span style="color: var(--heading);">60</span> * <span style="color: var(--heading);">60</span> * <span style="color: var(--heading);">1000</span>, <span style="color: var(--caption);">// 2 hours</span></div>
+          <div style="margin-bottom: 8px;">})</div>
+          <div style="margin-bottom: 8px;">console.log(result.analysis)</div>
+          <div>console.log(result.fromCache) <span style="color: var(--caption);">// true if base was cached</span></div>
         </div>
-        <div class="code-block">
-          <code><span class="prompt-sym">$</span>cachelyze --prompt "explain the auth system"</code>
-          <button class="copy-btn" onclick="copyCode(this, 'cachelyze --prompt &quot;explain the auth system&quot;')" title="Copy">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
-        </div>
+        <a href="https://github.com/mateffy/cachelyze#sdk-usage" class="link">SDK reference →</a>
       </div>
-      <a href="https://github.com/your-org/cachelyze#readme" class="docs-link">Read the full documentation →</a>
     </section>
 
-    <div class="section-divider"></div>
-
-    <!-- ───── Features ───── -->
+    <!-- CTA -->
     <section>
-      <p class="section-title">Features</p>
-      <div class="features-grid">
-        <!-- Row 1: 2fr + 1fr -->
-        <div class="features-row-1">
-          <!-- Card 1 (wide) -->
-          <div class="feature-card">
-            <div class="feature-card-icon-bg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-              </svg>
+      <h2>Ready to cache your codebase?</h2>
+      <div class="card">
+        <div class="cta-grid">
+          <div>
+            <div class="cta-title">Quickstart</div>
+            <div class="command-row" style="margin-bottom: 20px;">
+              <div class="command-line">
+                <div class="command-text">
+                  <span style="color: var(--accent); user-select: none;">$</span>
+                  <span>npm install -g cachelyze</span>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard(this, 'npm install -g cachelyze')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
-            <h3>One analysis per commit,<br/>served instantly</h3>
-            <p>The first run on a commit invokes your configured AI harness to explore the codebase and write a dense analysis. Every subsequent call — in any process, session, or agent — returns it from cache instantly. Switch commits and the right cache entry loads automatically.</p>
+            <a href="https://github.com/mateffy/cachelyze#readme" class="link">Full quickstart guide →</a>
           </div>
-          <!-- Card 2 -->
-          <div class="feature-card">
-            <div class="feature-card-icon-bg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-              </svg>
-            </div>
-            <h3>Organic diff analysis</h3>
-            <p>Working changes are never passed as a raw diff. The agent discovers them organically via its own git tools, producing richer insight than a plain patch.</p>
-          </div>
-        </div>
-
-        <!-- Row 2: 1fr + 1fr + 1fr -->
-        <div class="features-row-2">
-          <!-- Card 3 -->
-          <div class="feature-card">
-            <div class="feature-card-icon-bg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/>
-              </svg>
-            </div>
-            <h3>Pluggable runner</h3>
-            <p>Implement HarnessRunner to use any agent — subprocess, in-process library, remote API, or test mock. Supports opencode, claude, codex, aider, gemini out of the box.</p>
-          </div>
-          <!-- Card 4 -->
-          <div class="feature-card">
-            <div class="feature-card-icon-bg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
-              </svg>
-            </div>
-            <h3>Pluggable cache store</h3>
-            <p>FsStore for the filesystem, MemoryStore for in-process use, or bring your own — implement CacheStore to persist analyses in a database, Redis, or S3.</p>
-          </div>
-          <!-- Card 5 -->
-          <div class="feature-card">
-            <div class="feature-card-icon-bg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
-              </svg>
-            </div>
-            <h3>Full TypeScript SDK</h3>
-            <p>Everything is exported. Use analyze() directly in your application, wire up custom stores and runners, handle errors with typed exceptions. Zero magic, full control.</p>
+          <div class="cta-divider">
+            <div class="cta-title">Documentation</div>
+            <ul class="doc-links">
+              <li><a href="https://github.com/mateffy/cachelyze#cli-usage">CLI usage</a></li>
+              <li><a href="https://github.com/mateffy/cachelyze#sdk-usage">SDK usage</a></li>
+              <li><a href="https://github.com/mateffy/cachelyze#custom-runner-in-process-agent">Custom runners</a></li>
+              <li><a href="https://github.com/mateffy/cachelyze#custom-cache-store">Custom cache stores</a></li>
+              <li><a href="https://github.com/mateffy/cachelyze#cache-expiry-with-maxage">Cache expiry</a></li>
+              <li><a href="https://github.com/mateffy/cachelyze#api-reference">API reference</a></li>
+            </ul>
           </div>
         </div>
       </div>
     </section>
+  </div>
 
-    <div class="section-divider"></div>
-
-    <!-- ───── How it works ───── -->
-    <section>
-      <p class="section-title">How it works</p>
-      <div class="pipeline">
-        <div class="pipeline-step">
-          <div class="pipeline-step-inner">
-            <span class="pipeline-step-title">First call</span>
-          </div>
-          <div class="pipeline-step-sub">git rev-parse HEAD</div>
-        </div>
-        <div class="pipeline-arrow">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </div>
-        <div class="pipeline-step">
-          <div class="pipeline-step-inner">
-            <span class="pipeline-step-title">Analysis runs</span>
-          </div>
-          <div class="pipeline-step-sub">Your harness<br/>explores the repo</div>
-        </div>
-        <div class="pipeline-arrow">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </div>
-        <div class="pipeline-step">
-          <div class="pipeline-step-inner">
-            <span class="pipeline-step-title">Cached to disk</span>
-          </div>
-          <div class="pipeline-step-sub">~/.cache/cachelyze<br/>per commit hash</div>
-        </div>
-        <div class="pipeline-arrow">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </div>
-        <div class="pipeline-step">
-          <div class="pipeline-step-inner">
-            <span class="pipeline-step-title">Future calls</span>
-          </div>
-          <div class="pipeline-step-sub">Instant return<br/>+ diff pass</div>
-        </div>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ───── SDK section ───── -->
-    <section>
-      <p class="section-title">Integrate into your application using the TypeScript SDK</p>
-      <div class="sdk-card">
-        <div class="sdk-card-header">
-          <div class="dot dot-red" style="opacity:0.6"></div>
-          <div class="dot dot-amber" style="opacity:0.6"></div>
-          <div class="dot dot-green" style="opacity:0.6"></div>
-          <span class="file-pill">example.ts</span>
-        </div>
-        <pre class="sdk-code"><span class="kw">import</span> <span class="pl">{ analyze, FsStore }</span> <span class="kw">from</span> <span class="str">"cachelyze"</span>
-<span class="kw">import type</span> <span class="pl">{ HarnessRunner, RunRequest, RunResult }</span> <span class="kw">from</span> <span class="str">"cachelyze"</span>
-
-<span class="cm">// Custom in-process runner — no subprocess needed</span>
-<span class="kw">class</span> <span class="ty">MyAgentRunner</span> <span class="kw">implements</span> <span class="ty">HarnessRunner</span> <span class="pl">{</span>
-  <span class="kw">readonly</span> <span class="pl">name</span> <span class="pl">=</span> <span class="str">"my-agent"</span>
-  <span class="kw">async</span> <span class="fn">run</span><span class="pl">(</span><span class="pl">req</span><span class="pl">:</span> <span class="ty">RunRequest</span><span class="pl">):</span> <span class="ty">Promise</span><span class="pl">&lt;</span><span class="ty">RunResult</span><span class="pl">&gt; {</span>
-    <span class="kw">const</span> <span class="pl">output</span> <span class="pl">=</span> <span class="kw">await</span> <span class="pl">myAgent.</span><span class="fn">query</span><span class="pl">(req.prompt, {</span> <span class="pl">cwd:</span> <span class="pl">req.cwd</span> <span class="pl">})</span>
-    <span class="kw">return</span> <span class="pl">{ output }</span>
-  <span class="pl">}</span>
-<span class="pl">}</span>
-
-<span class="cm">// Persistent cache + custom runner</span>
-<span class="kw">const</span> <span class="pl">result</span> <span class="pl">=</span> <span class="kw">await</span> <span class="fn">analyze</span><span class="pl">({</span>
-  <span class="pl">runner:</span> <span class="kw">new</span> <span class="ty">MyAgentRunner</span><span class="pl">(),</span>
-  <span class="pl">store:</span>  <span class="kw">new</span> <span class="ty">FsStore</span><span class="pl">(),</span>
-  <span class="pl">prompt:</span> <span class="str">"what changed in the auth layer?"</span><span class="pl">,</span>
-  <span class="pl">maxAge:</span> <span class="pl">2</span> <span class="pl">*</span> <span class="pl">60</span> <span class="pl">*</span> <span class="pl">60</span> <span class="pl">*</span> <span class="pl">1000,</span> <span class="cm">// 2 hours</span>
-<span class="pl">})</span>
-
-<span class="pl">console.</span><span class="fn">log</span><span class="pl">(result.analysis)</span>
-<span class="pl">console.</span><span class="fn">log</span><span class="pl">(result.fromCache)</span> <span class="cm">// true if base was cached</span></pre>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ───── CTA ───── -->
-    <section>
-      <p class="section-title">Ready to cache your codebase?</p>
-      <div class="cta-grid">
-        <div class="cta-card">
-          <h3>Get started</h3>
-          <div class="cta-install-block"><span class="prompt-sym">$</span>npm install -g cachelyze</div>
-          <a href="https://github.com/your-org/cachelyze#readme" class="cta-card-link">
-            Quickstart guide
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </a>
-        </div>
-        <div class="cta-card">
-          <h3>Documentation</h3>
-          <ul class="doc-links">
-            <li><a href="https://github.com/your-org/cachelyze#cli-usage">CLI usage</a></li>
-            <li><a href="https://github.com/your-org/cachelyze#sdk-usage">SDK usage</a></li>
-            <li><a href="https://github.com/your-org/cachelyze#custom-runner-in-process-agent">Custom runners</a></li>
-            <li><a href="https://github.com/your-org/cachelyze#custom-cache-store">Custom cache stores</a></li>
-            <li><a href="https://github.com/your-org/cachelyze#cache-expiry-with-maxage">Cache expiry</a></li>
-            <li><a href="https://github.com/your-org/cachelyze#api-reference">API reference</a></li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-  </div><!-- /container -->
-
-  <!-- ───── Footer ───── -->
+  <!-- Footer -->
   <footer>
     <div class="footer-left">
-      <span style="font-weight:600; color: var(--muted);">cachelyze</span>
-      <span class="footer-sep">·</span>
-      <span>MIT License</span>
+      cachelyze by <a href="https://mateffy.org">Lukas Mateffy</a>
     </div>
-    <div class="footer-links">
-      <a href="https://www.npmjs.com/package/cachelyze">npm</a>
-      <a href="https://github.com/your-org/cachelyze">GitHub</a>
-    </div>
+    <nav class="footer-links">
+      <a href="https://github.com/mateffy/cachelyze#readme">Documentation</a>
+      <a href="https://github.com/mateffy/cachelyze#cli-usage">CLI</a>
+      <a href="https://github.com/mateffy/cachelyze#sdk-usage">SDK</a>
+      <a href="https://github.com/mateffy/cachelyze">GitHub</a>
+    </nav>
   </footer>
 
-  <!-- ───── Terminal Animation JS ───── -->
   <script>
-    (function() {
-      const SPINNER_FRAMES = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
-
-      // The script: array of "segments" — each is a styled span + the text to type
-      // We build up lines incrementally using a simple state machine
-      const SCRIPT = [
-        // Command 1
-        { cls: 'term-prompt', text: '$ ' },
-        { cls: '',            text: 'cachelyze\n' },
-        { cls: 'term-spinner',text: '⠸ ' },
-        { cls: 'term-dim',    text: 'Analyzing codebase... (claude · abc123f)\n' },
-        { cls: '',            text: '\n' },
-        { cls: 'term-check',  text: '✓ ' },
-        { cls: '',            text: 'Analysis complete — cached to ~/.cache/cachelyze/my-app-3f2a1b4c/\n' },
-        { cls: '',            text: '\n' },
-        { cls: '',            text: 'Architecture: Bun monorepo (4 packages). Core SDK exposes analyze(),\n' },
-        { cls: '',            text: 'pluggable CacheStore and HarnessRunner interfaces. CLI built with citty.\n' },
-        { cls: '',            text: 'Entry point: packages/cli/src/index.ts\n' },
-        { cls: '',            text: '\n' },
-        // Command 2
-        { cls: 'term-prompt', text: '$ ' },
-        { cls: '',            text: 'cachelyze --prompt "what auth changes are in progress?"\n' },
-        { cls: 'term-spinner',text: '⠸ ' },
-        { cls: 'term-dim',    text: 'Cache hit (abc123f) · analyzing working changes...\n' },
-        { cls: '',            text: '\n' },
-        { cls: 'term-check',  text: '✓ ' },
-        { cls: '',            text: 'Done\n' },
-        { cls: '',            text: '\n' },
-        { cls: '',            text: 'In-progress: JWT middleware refactored in src/auth/middleware.ts.\n' },
-        { cls: '',            text: 'Token expiry now configurable via AUTH_TOKEN_TTL env var.\n' },
-        { cls: '',            text: '\n' },
-      ];
-
-      const container = document.getElementById('terminal-body');
-      const cursorEl  = document.getElementById('cursor');
-
-      function jitter(base, range) {
-        return base + (Math.random() * range * 2 - range);
+    // Terminal animation
+    const EXAMPLES = [
+      {
+        command: 'cachelyze',
+        output: `<div>{</div>
+<div style="padding-left: 20px;">
+  <div><span class="json-key">"analysis"</span>: <span>"Bun monorepo with 4 packages. Core SDK exposes analyze(), pluggable CacheStore and HarnessRunner interfaces. Entry: packages/cli/src/index.ts"</span>,</div>
+  <div><span class="json-key">"fromCache"</span>: <span style="color: #a0926f;">true</span>,</div>
+  <div><span class="json-key">"gitHash"</span>: <span>"abc123f"</span></div>
+</div>
+<div>}</div>`
+      },
+      {
+        command: 'cachelyze --prompt "what auth changes are in progress?"',
+        output: `<div>{</div>
+<div style="padding-left: 20px;">
+  <div><span class="json-key">"analysis"</span>: <span>"JWT middleware refactored in src/auth/middleware.ts. Token expiry now configurable via AUTH_TOKEN_TTL env var."</span>,</div>
+  <div><span class="json-key">"fromCache"</span>: <span style="color: #a0926f;">true</span>,</div>
+  <div><span class="json-key">"diffAnalysis"</span>: <span style="color: #bba88a;">"Added 2 files, modified 1"</span></div>
+</div>
+<div>}</div>`
+      },
+      {
+        command: 'cachelyze --harness opencode --max-age 2h',
+        output: `<div>{</div>
+<div style="padding-left: 20px;">
+  <div><span class="json-key">"analysis"</span>: <span>"React + TypeScript app. Components in src/components/, state management with Zustand in src/store/. API client in src/lib/api.ts"</span>,</div>
+  <div><span class="json-key">"fromCache"</span>: <span style="color: #a0926f;">false</span>,</div>
+  <div><span class="json-key">"revalidated"</span>: <span style="color: #a0926f;">true</span></div>
+</div>
+<div>}</div>`
       }
+    ];
 
-      function sleep(ms) {
-        return new Promise(r => setTimeout(r, ms));
+    const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    const TYPING_SPEED = 38;
+    const SPINNER_DURATION = 2400;
+    const OUTPUT_PAUSE = 2500;
+    const FADE_OUT_DURATION = 400;
+
+    let currentExample = 0;
+    let phase = 'typing';
+    let typedLen = 0;
+    let spinnerFrame = 0;
+
+    const typingText = document.getElementById('typing-text');
+    const cursor = document.getElementById('cursor');
+    const spinnerLine = document.getElementById('spinner-line');
+    const spinnerChar = document.getElementById('spinner-char');
+    const outputLine = document.getElementById('output-line');
+
+    function reset() {
+      phase = 'typing';
+      typedLen = 0;
+      spinnerFrame = 0;
+      typingText.textContent = '';
+      spinnerLine.style.display = 'none';
+      outputLine.style.display = 'none';
+      outputLine.className = '';
+      cursor.style.animation = 'terminal-cursor-solid 0.05s step-end infinite';
+    }
+
+    function typeNext() {
+      if (phase !== 'typing') return;
+      
+      const example = EXAMPLES[currentExample];
+      typedLen++;
+      typingText.textContent = example.command.slice(0, typedLen);
+      
+      if (typedLen < example.command.length) {
+        setTimeout(typeNext, TYPING_SPEED);
+      } else {
+        // Transition to spinner
+        setTimeout(() => {
+          phase = 'spinner';
+          cursor.style.animation = 'terminal-cursor-blink 1.2s step-end infinite';
+          spinnerLine.style.display = 'flex';
+          spinnerLine.className = 'fade-in';
+          
+          const spinnerInterval = setInterval(() => {
+            spinnerFrame = (spinnerFrame + 1) % SPINNER_FRAMES.length;
+            spinnerChar.textContent = SPINNER_FRAMES[spinnerFrame];
+          }, 80);
+          
+          setTimeout(() => {
+            clearInterval(spinnerInterval);
+            phase = 'output';
+            spinnerLine.style.display = 'none';
+            outputLine.style.display = 'block';
+            outputLine.innerHTML = example.output;
+            outputLine.className = 'terminal-output fade-in';
+            
+            setTimeout(() => {
+              phase = 'pause';
+              outputLine.className = 'terminal-output fade-out';
+              
+              setTimeout(() => {
+                currentExample = (currentExample + 1) % EXAMPLES.length;
+                reset();
+                setTimeout(typeNext, TYPING_SPEED);
+              }, FADE_OUT_DURATION);
+            }, OUTPUT_PAUSE);
+          }, SPINNER_DURATION);
+        }, 120);
       }
+    }
 
-      // Build a span for a segment class
-      function makeSpan(cls) {
-        const s = document.createElement('span');
-        if (cls) s.className = cls;
-        return s;
-      }
+    // Start animation
+    setTimeout(typeNext, 500);
 
-      async function runAnimation() {
-        container.innerHTML = '';
-        container.appendChild(cursorEl);
-
-        for (const seg of SCRIPT) {
-          const span = makeSpan(seg.cls);
-          container.insertBefore(span, cursorEl);
-
-          for (const ch of seg.text) {
-            if (ch === '\n') {
-              span.appendChild(document.createTextNode('\n'));
-              await sleep(jitter(800, 200));
-            } else {
-              span.appendChild(document.createTextNode(ch));
-              await sleep(jitter(40, 15));
-            }
-          }
-        }
-
-        // End pause then loop
-        await sleep(2500);
-        await runAnimation();
-      }
-
-      setTimeout(runAnimation, 500);
-    })();
-  </script>
-
-  <!-- ───── Copy button JS ───── -->
-  <script>
-    function copyCode(btn, text) {
+    // Copy to clipboard
+    function copyToClipboard(btn, text) {
       const decoded = text.replace(/&quot;/g, '"');
       navigator.clipboard.writeText(decoded).then(() => {
         btn.classList.add('copied');
-        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
         setTimeout(() => {
           btn.classList.remove('copied');
-          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-        }, 2000);
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+        }, 1500);
       });
     }
   </script>
-
 </body>
 </html>
