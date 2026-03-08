@@ -1,6 +1,6 @@
 import { defineCommand } from "citty"
-import { analyze, detectHarnesses, FsStore } from "@research-agent/core"
-import type { HarnessName } from "@research-agent/core"
+import { analyze, detectHarnesses, FsStore } from "@research.actor/core"
+import type { HarnessName } from "@research.actor/core"
 
 const VALID_HARNESSES: readonly HarnessName[] = ["opencode", "claude", "codex", "aider", "gemini"]
 

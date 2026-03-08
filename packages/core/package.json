@@ -1,5 +1,5 @@
 {
-  "name": "@research-agent/core",
+  "name": "@research.actor/core",
   "version": "0.4.5",
   "description": "Core business logic for research — cached codebase analysis for AI agents",
   "homepage": "https://research.actor",

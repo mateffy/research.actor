@@ -11,13 +11,13 @@
     },
     "packages/cachelyze": {
       "name": "cachelyze",
-      "version": "0.4.3",
+      "version": "0.4.5",
       "bin": {
         "research": "./bin/cachelyze.js",
       },
       "dependencies": {
-        "@research-agent/cli": "workspace:*",
-        "@research-agent/core": "workspace:*",
+        "@research.actor/cli": "workspace:*",
+        "@research.actor/core": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^22.0.0",
@@ -25,13 +25,13 @@
       },
     },
     "packages/cli": {
-      "name": "@research-agent/cli",
-      "version": "0.4.3",
+      "name": "@research.actor/cli",
+      "version": "0.4.5",
       "bin": {
         "research": "./dist/index.js",
       },
       "dependencies": {
-        "@research-agent/core": "workspace:*",
+        "@research.actor/core": "workspace:*",
         "citty": "^0.1.6",
       },
       "devDependencies": {
@@ -40,23 +40,8 @@
       },
     },
     "packages/core": {
-      "name": "@research-agent/core",
-      "version": "0.4.3",
-      "devDependencies": {
-        "@types/node": "^22.0.0",
-        "typescript": "^5.7.3",
-      },
-    },
-    "packages/research-agent": {
-      "name": "research-agent",
-      "version": "0.4.3",
-      "bin": {
-        "research": "./bin/research-agent.js",
-      },
-      "dependencies": {
-        "@research-agent/cli": "workspace:*",
-        "@research-agent/core": "workspace:*",
-      },
+      "name": "@research.actor/core",
+      "version": "0.4.5",
       "devDependencies": {
         "@types/node": "^22.0.0",
         "typescript": "^5.7.3",
@@ -64,13 +49,13 @@
     },
     "packages/research.actor": {
       "name": "research.actor",
-      "version": "0.4.3",
+      "version": "0.4.5",
       "bin": {
         "research": "./bin/research.actor.js",
       },
       "dependencies": {
-        "@research-agent/cli": "workspace:*",
-        "@research-agent/core": "workspace:*",
+        "@research.actor/cli": "workspace:*",
+        "@research.actor/core": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^22.0.0",
@@ -78,8 +63,8 @@
       },
     },
     "packages/skill": {
-      "name": "@research-agent/skill",
-      "version": "0.4.3",
+      "name": "@research.actor/skill",
+      "version": "0.4.5",
       "devDependencies": {
         "@types/node": "^22.0.0",
         "typescript": "^5.7.3",
@@ -87,11 +72,11 @@
     },
   },
   "packages": {
-    "@research-agent/cli": ["@research-agent/cli@workspace:packages/cli"],
+    "@research.actor/cli": ["@research.actor/cli@workspace:packages/cli"],
 
-    "@research-agent/core": ["@research-agent/core@workspace:packages/core"],
+    "@research.actor/core": ["@research.actor/core@workspace:packages/core"],
 
-    "@research-agent/skill": ["@research-agent/skill@workspace:packages/skill"],
+    "@research.actor/skill": ["@research.actor/skill@workspace:packages/skill"],
 
     "@types/bun": ["@types/bun@1.3.10", "", { "dependencies": { "bun-types": "1.3.10" } }, "sha512-0+rlrUrOrTSskibryHbvQkDOWRJwJZqZlxrUs1u4oOoTln8+WIXBPmAuCF35SWB2z4Zl3E84Nl/D0P7803nigQ=="],
 
@@ -104,8 +89,6 @@
     "citty": ["citty@0.1.6", "", { "dependencies": { "consola": "^3.2.3" } }, "sha512-tskPPKEs8D2KPafUypv2gxwJP8h/OaJmC82QQGGDQcHvXX43xF2VDACcJVmZ0EuSxkpO9Kc4MlrA3q0+FG58AQ=="],
 
     "consola": ["consola@3.4.2", "", {}, "sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA=="],
-
-    "research-agent": ["research-agent@workspace:packages/research-agent"],
 
     "research.actor": ["research.actor@workspace:packages/research.actor"],
 

@@ -1,6 +1,6 @@
 import { defineCommand } from "citty"
-import { getRepoRoot, deriveProjectKey, FsStore } from "@research-agent/core"
-import { GitError } from "@research-agent/core"
+import { getRepoRoot, deriveProjectKey, FsStore } from "@research.actor/core"
+import { GitError } from "@research.actor/core"
 
 export const clearCommand = defineCommand({
   meta: {

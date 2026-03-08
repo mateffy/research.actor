@@ -1,5 +1,5 @@
 {
-  "name": "@research-agent/skill",
+  "name": "@research.actor/skill",
   "version": "0.4.5",
   "description": "Agent skill for research — teaches AI agents how to use research effectively",
   "homepage": "https://research.actor",
@@ -17,12 +17,12 @@
       "types": "./dist/index.d.ts"
     },
     "./skill": {
-      "import": "./research-agent-analyze/SKILL.md"
+      "import": "./research-analyze/SKILL.md"
     }
   },
   "files": [
     "dist",
-    "research-agent-analyze",
+    "research-analyze",
     "README.md"
   ],
   "keywords": [

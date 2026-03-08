@@ -3,12 +3,11 @@ import { $ } from "bun";
 
 // Packages to publish (must be in dependency order)
 const packages = [
-  { name: "@research-agent/core", path: "packages/core" },
-  { name: "@research-agent/cli", path: "packages/cli" },
-  { name: "research", path: "packages/cachelyze" },
-  { name: "research", path: "packages/research.actor" },
-  { name: "research-agent", path: "packages/research-agent" },
-  { name: "@research-agent/skill", path: "packages/skill" },
+  { name: "@research.actor/core", path: "packages/core" },
+  { name: "@research.actor/cli", path: "packages/cli" },
+  { name: "cachelyze", path: "packages/cachelyze" },
+  { name: "research.actor", path: "packages/research.actor" },
+  { name: "@research.actor/skill", path: "packages/skill" },
 ];
 
 // Read version from core package (source of truth)

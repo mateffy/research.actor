@@ -39,8 +39,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@research-agent/core": "workspace:*",
-    "@research-agent/cli": "workspace:*"
+    "@research.actor/core": "workspace:*",
+    "@research.actor/cli": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

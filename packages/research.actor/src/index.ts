@@ -14,7 +14,7 @@
  * ```
  */
 
-// Re-export everything from @research-agent/core
+// Re-export everything from @research.actor/core
 export {
   analyze,
   detectHarnesses,
@@ -35,7 +35,7 @@ export {
   CachelyzError,
   HarnessNotFoundError,
   GitError,
-} from "@research-agent/core"
+} from "@research.actor/core"
 
 export type {
   HarnessName,
@@ -50,7 +50,7 @@ export type {
   AnalyzeOptions,
   AnalyzeResult,
   GitInfo,
-} from "@research-agent/core"
+} from "@research.actor/core"
 
 /**
  * Package metadata.

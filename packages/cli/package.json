@@ -1,5 +1,5 @@
 {
-  "name": "@research-agent/cli",
+  "name": "@research.actor/cli",
   "version": "0.4.5",
   "description": "CLI for research — cached codebase analysis for AI agents",
   "homepage": "https://research.actor",
@@ -28,7 +28,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@research-agent/core": "workspace:*",
+    "@research.actor/core": "workspace:*",
     "citty": "^0.1.6"
   },
   "devDependencies": {
