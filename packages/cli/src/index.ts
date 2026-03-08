@@ -6,14 +6,14 @@ import { clearCommand } from "./commands/clear.js"
 /**
  * Root command.
  *
- * Bare `cachelyze` runs the analysis (delegates to the `analyze` subcommand).
- * All analyze flags are available at the root level for convenience.
+ * Bare `cachelyze [flags]` runs the analysis directly (same as `cachelyze analyze`).
+ * The `clear` subcommand removes all cached analyses for the current repo.
  *
- * Subcommands:
- *   cachelyze analyze  — explicit alias for the default behaviour
- *   cachelyze clear    — remove all cached analyses for the current repo
+ * citty routes to a subcommand when the first argument matches a known subcommand
+ * name; otherwise it falls through to the root `run`, which is the analyze logic.
  */
 const main = defineCommand({
+  ...analyzeCommand,
   meta: {
     name: "cachelyze",
     description:
@@ -23,12 +23,6 @@ const main = defineCommand({
   subCommands: {
     analyze: analyzeCommand,
     clear: clearCommand,
-  },
-  // When invoked without a subcommand, run the analysis directly
-  run() {
-    // citty will call the default subcommand automatically when subCommands is
-    // defined and no subcommand is matched; we just need this run to re-delegate.
-    return analyzeCommand.run?.call(this, arguments[0] as never)
   },
 })
 
