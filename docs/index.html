@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cachelyze — cached codebase analysis for AI agents</title>
+  <title>research.actor — cached codebase analysis for AI agents</title>
   <meta name="description" content="Stop re-exploring. Start caching. Run a full codebase analysis once per git commit, cache it, and serve it instantly to AI agents." />
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -896,9 +896,9 @@
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar-desktop">
-    <a href="https://github.com/mateffy/cachelyze">GitHub</a>
-    <a href="https://cachelyze.com">Website</a>
+    <nav class="navbar-desktop">
+    <a href="https://github.com/mateffy/research.actor">GitHub</a>
+    <a href="https://research.actor">Website</a>
     <a href="https://mateffy.org">Made by Lukas Mateffy</a>
   </nav>
 
@@ -906,14 +906,14 @@
     <!-- Hero -->
     <section class="hero-section">
       <div class="hero-image">
-        <img src="cachelyze.webp" alt="cachelyze" width="200" height="200" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.2));">
+        <img src="cachelyze.webp" alt="research.actor" width="200" height="200" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.2));">
       </div>
       <div>
         <div class="hero-phonetic" style="font-family: 'Share Tech Mono', monospace;">/agent</div>
-        <h1 class="hero-title"><span id="hero-spinner" style="display: inline-block; margin-right: 16px;">⠋</span>cachelyze</h1>
+        <h1 class="hero-title"><span id="hero-spinner" style="display: inline-block; margin-right: 16px;">⠋</span>research.actor</h1>
         <p class="hero-description">
           <strong style="color: var(--heading);">Every new agent session wastes tokens re-reading your codebase.</strong><br/>
-          With cachelyze you run a full research agent once per git commit, cache its analysis, and return it instantly to other agents. Saves time and tokens. Used as a baseline for deeper research.
+          With research.actor you run a full research agent once per git commit, cache its analysis, and return it instantly to other agents. Saves time and tokens. Used as a baseline for deeper research.
         </p>
       </div>
     </section>
@@ -939,11 +939,11 @@
         
         <!-- Micro terminal comparison -->
         <div class="micro-terminals-container">
-          <div class="micro-terminal before" id="micro-before">
-            <div class="micro-terminal-label">WITHOUT CACHELYZE</div>
+            <div class="micro-terminal before" id="micro-before">
+            <div class="micro-terminal-label">WITHOUT RESEARCH.ACTOR</div>
           </div>
           <div class="micro-terminal after" id="micro-after">
-            <div class="micro-terminal-label">WITH CACHELYZE</div>
+            <div class="micro-terminal-label">WITH RESEARCH.ACTOR</div>
           </div>
         </div>
       </div>
@@ -956,11 +956,11 @@
         <div class="command-row">
           <div class="command-label">Install globally</div>
           <div class="command-line">
-            <div class="command-text">
-              <span style="color: var(--accent); user-select: none;">$</span>
-              <span>npm install -g cachelyze</span>
-            </div>
-            <button class="copy-btn" onclick="copyToClipboard(this, 'npm install -g cachelyze')">
+                <div class="command-text">
+                  <span style="color: var(--accent); user-select: none;">$</span>
+                  <span>npm install -g research.actor</span>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard(this, 'npm install -g research.actor')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -973,9 +973,9 @@
           <div class="command-line">
             <div class="command-text">
               <span style="color: var(--accent); user-select: none;">$</span>
-              <span>cachelyze --harness claude</span>
+              <span>research.actor --harness claude</span>
             </div>
-            <button class="copy-btn" onclick="copyToClipboard(this, 'cachelyze --harness claude')">
+            <button class="copy-btn" onclick="copyToClipboard(this, 'research.actor --harness claude')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -988,9 +988,9 @@
           <div class="command-line">
             <div class="command-text" style="white-space: pre-wrap;">
               <span style="color: var(--accent); user-select: none;">$</span>
-              <span>cachelyze --prompt "explain the auth system"</span>
+              <span>research.actor --prompt "explain the auth system"</span>
             </div>
-            <button class="copy-btn" onclick="copyToClipboard(this, 'cachelyze --prompt &quot;explain the auth system&quot;')">
+            <button class="copy-btn" onclick="copyToClipboard(this, 'research.actor --prompt &quot;explain the auth system&quot;')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -999,7 +999,7 @@
           </div>
         </div>
         <div style="margin-top: 24px;">
-          <a href="https://github.com/mateffy/cachelyze#readme" class="link">Read the full documentation →</a>
+          <a href="https://github.com/mateffy/research.actor#readme" class="link">Read the full documentation →</a>
         </div>
       </div>
     </section>
@@ -1076,7 +1076,7 @@
             </svg>
           </div>
           <div class="feature-card-title">Outside repo cache</div>
-          <div class="feature-card-desc">Cache stored in ~/.cache/cachelyze/ so agents don't accidentally read cache files.</div>
+          <div class="feature-card-desc">Cache stored in ~/.cache/research.actor/ so agents don't accidentally read cache files.</div>
         </div>
       </div>
     </section>
@@ -1092,7 +1092,7 @@
             <div class="terminal-dot red"></div>
             <div class="terminal-dot yellow"></div>
             <div class="terminal-dot green"></div>
-            <div class="terminal-title">cachelyze — First Run</div>
+            <div class="terminal-title">research.actor — First Run</div>
           </div>
           <div class="terminal-body">
             <div class="tui-chat" id="chat-slow"></div>
@@ -1101,7 +1101,7 @@
         <div class="how-it-works-text">
           <h3>Perform a full analysis on first run</h3>
           <p>
-            When you start a fresh agent conversation, cachelyze invokes your AI harness to explore and analyze the codebase. This takes some time as the agent discovers structure, dependencies, and key files. The analysis is then cached based on the git hash / branch state.
+            When you start a fresh agent conversation, research.actor invokes your AI harness to explore and analyze the codebase. This takes some time as the agent discovers structure, dependencies, and key files. The analysis is then cached based on the git hash / branch state.
           </p>
           <span class="speed-badge">~3-5 seconds</span>
         </div>
@@ -1121,7 +1121,7 @@
             <div class="terminal-dot red"></div>
             <div class="terminal-dot yellow"></div>
             <div class="terminal-dot green"></div>
-            <div class="terminal-title">cachelyze — Cache Hit</div>
+            <div class="terminal-title">research.actor — Cache Hit</div>
           </div>
           <div class="terminal-body">
             <div class="tui-chat" id="chat-fast"></div>
@@ -1131,15 +1131,15 @@
 
       <div class="card" style="margin-top: 40px;">
         <p style="font-size: 14px; color: var(--muted); margin-bottom: 16px; line-height: 1.6;">
-          The analysis is cached to <code>~/.cache/cachelyze/</code> keyed by git commit hash. Switch branches or commits and the correct cache entry loads automatically. Cache entries can expire with <code>--max-age</code> for automatic re-analysis.
+          The analysis is cached to <code>~/.cache/research.actor/</code> keyed by git commit hash. Switch branches or commits and the correct cache entry loads automatically. Cache entries can expire with <code>--max-age</code> for automatic re-analysis.
         </p>
-        <a href="https://github.com/mateffy/cachelyze#how-it-works" class="link">How it works in detail →</a>
+        <a href="https://github.com/mateffy/research.actor#how-it-works" class="link">How it works in detail →</a>
       </div>
     </section>
 
-    <!-- Before cachelyze -->
+    <!-- Before research.actor -->
     <section>
-      <h2>Before cachelyze</h2>
+      <h2>Before research.actor</h2>
       <p style="font-size: 16px; color: var(--body); margin-bottom: 24px; line-height: 1.6;">
         Without caching, every agent conversation starts from scratch. Each task triggers a full codebase exploration, burning tokens and time on every request.
       </p>
@@ -1186,9 +1186,9 @@
       </div>
     </section>
 
-    <!-- After cachelyze -->
+    <!-- After research.actor -->
     <section>
-      <h2>After cachelyze</h2>
+      <h2>After research.actor</h2>
       <p style="font-size: 16px; color: var(--body); margin-bottom: 24px; line-height: 1.6;">
         With caching, agents get instant context and can ask targeted questions. The same tasks complete faster with minimal token usage.
       </p>
@@ -1241,11 +1241,11 @@
       <div class="card">
         <div class="code-block">
           <div class="code-label">Install the SDK</div>
-          <div><span style="color: var(--accent);">$</span> npm install @cachelyze/core</div>
+          <div><span style="color: var(--accent);">$</span> npm install @research.actor/core</div>
         </div>
         <div class="code-block">
-          <div style="margin-bottom: 8px;"><span style="color: var(--accent);">import</span> { analyze, FsStore } <span style="color: var(--accent);">from</span> <span style="color: var(--json-key);">"@cachelyze/core"</span></div>
-          <div style="margin-bottom: 8px;"><span style="color: var(--accent);">import type</span> { HarnessRunner, RunRequest, RunResult } <span style="color: var(--accent);">from</span> <span style="color: var(--json-key);">"@cachelyze/core"</span></div>
+          <div style="margin-bottom: 8px;"><span style="color: var(--accent);">import</span> { analyze, FsStore } <span style="color: var(--accent);">from</span> <span style="color: var(--json-key);">"@research.actor/core"</span></div>
+          <div style="margin-bottom: 8px;"><span style="color: var(--accent);">import type</span> { HarnessRunner, RunRequest, RunResult } <span style="color: var(--accent);">from</span> <span style="color: var(--json-key);">"@research.actor/core"</span></div>
           <div style="margin-bottom: 12px; color: var(--caption);">// Custom in-process runner — no subprocess needed</div>
           <div style="margin-bottom: 8px;"><span style="color: var(--accent);">class</span> <span style="color: var(--heading); font-weight: 600;">MyAgentRunner</span> <span style="color: var(--accent);">implements</span> <span style="color: var(--heading); font-weight: 600;">HarnessRunner</span> {</div>
           <div style="padding-left: 16px; margin-bottom: 8px;"><span style="color: var(--accent);">readonly</span> name = <span style="color: var(--json-key);">"my-agent"</span></div>
@@ -1264,7 +1264,7 @@
           <div style="margin-bottom: 8px;">console.log(result.analysis)</div>
           <div>console.log(result.fromCache) <span style="color: var(--caption);">// true if base was cached</span></div>
         </div>
-        <a href="https://github.com/mateffy/cachelyze#sdk-usage" class="link">SDK reference →</a>
+        <a href="https://github.com/mateffy/research.actor#sdk-usage" class="link">SDK reference →</a>
       </div>
     </section>
 
@@ -1279,9 +1279,9 @@
               <div class="command-line">
                 <div class="command-text">
                   <span style="color: var(--accent); user-select: none;">$</span>
-                  <span>npm install -g cachelyze</span>
+              <span>npm install -g research.actor</span>
                 </div>
-                <button class="copy-btn" onclick="copyToClipboard(this, 'npm install -g cachelyze')">
+            <button class="copy-btn" onclick="copyToClipboard(this, 'npm install -g research.actor')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -1289,17 +1289,17 @@
                 </button>
               </div>
             </div>
-            <a href="https://github.com/mateffy/cachelyze#readme" class="link">Full quickstart guide →</a>
+            <a href="https://github.com/mateffy/research.actor#readme" class="link">Full quickstart guide →</a>
           </div>
           <div class="cta-divider">
             <div class="cta-title">Documentation</div>
             <ul class="doc-links">
-              <li><a href="https://github.com/mateffy/cachelyze#cli-usage">CLI usage</a></li>
-              <li><a href="https://github.com/mateffy/cachelyze#sdk-usage">SDK usage</a></li>
-              <li><a href="https://github.com/mateffy/cachelyze#custom-runner-in-process-agent">Custom runners</a></li>
-              <li><a href="https://github.com/mateffy/cachelyze#custom-cache-store">Custom cache stores</a></li>
-              <li><a href="https://github.com/mateffy/cachelyze#cache-expiry-with-maxage">Cache expiry</a></li>
-              <li><a href="https://github.com/mateffy/cachelyze#api-reference">API reference</a></li>
+              <li><a href="https://github.com/mateffy/research.actor#cli-usage">CLI usage</a></li>
+              <li><a href="https://github.com/mateffy/research.actor#sdk-usage">SDK usage</a></li>
+              <li><a href="https://github.com/mateffy/research.actor#custom-runner-in-process-agent">Custom runners</a></li>
+              <li><a href="https://github.com/mateffy/research.actor#custom-cache-store">Custom cache stores</a></li>
+              <li><a href="https://github.com/mateffy/research.actor#cache-expiry-with-maxage">Cache expiry</a></li>
+              <li><a href="https://github.com/mateffy/research.actor#api-reference">API reference</a></li>
             </ul>
           </div>
         </div>
@@ -1310,13 +1310,13 @@
   <!-- Footer -->
   <footer>
     <div class="footer-left">
-      cachelyze by <a href="https://mateffy.org">Lukas Mateffy</a>
+      research.actor by <a href="https://mateffy.org">Lukas Mateffy</a>
     </div>
     <nav class="footer-links">
-      <a href="https://github.com/mateffy/cachelyze#readme">Documentation</a>
-      <a href="https://github.com/mateffy/cachelyze#cli-usage">CLI</a>
-      <a href="https://github.com/mateffy/cachelyze#sdk-usage">SDK</a>
-      <a href="https://github.com/mateffy/cachelyze">GitHub</a>
+      <a href="https://github.com/mateffy/research.actor#readme">Documentation</a>
+      <a href="https://github.com/mateffy/research.actor#cli-usage">CLI</a>
+      <a href="https://github.com/mateffy/research.actor#sdk-usage">SDK</a>
+      <a href="https://github.com/mateffy/research.actor">GitHub</a>
     </nav>
   </footer>
 
@@ -1324,7 +1324,7 @@
     // Terminal animation
     const EXAMPLES = [
       {
-        command: 'cachelyze',
+        command: 'research.actor',
         output: `<div>{</div>
 <div style="padding-left: 20px;">
   <div><span class="json-key">"analysis"</span>: <span>"Bun monorepo with 4 packages. Core SDK exposes analyze(), pluggable CacheStore and HarnessRunner interfaces. Entry: packages/cli/src/index.ts"</span>,</div>
@@ -1334,7 +1334,7 @@
 <div>}</div>`
       },
       {
-        command: 'cachelyze --prompt "what auth changes are in progress?"',
+        command: 'research.actor --prompt "what auth changes are in progress?"',
         output: `<div>{</div>
 <div style="padding-left: 20px;">
   <div><span class="json-key">"analysis"</span>: <span>"JWT middleware refactored in src/auth/middleware.ts. Token expiry now configurable via AUTH_TOKEN_TTL env var."</span>,</div>
@@ -1344,7 +1344,7 @@
 <div>}</div>`
       },
       {
-        command: 'cachelyze --harness opencode --max-age 2h',
+        command: 'research.actor --harness opencode --max-age 2h',
         output: `<div>{</div>
 <div style="padding-left: 20px;">
   <div><span class="json-key">"analysis"</span>: <span>"React + TypeScript app. Components in src/components/, state management with Zustand in src/store/. API client in src/lib/api.ts"</span>,</div>
@@ -1469,7 +1469,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze',
+        tool: 'research.actor.analyze',
         loading: true,
         duration: 8000,
         delay: 600
@@ -1499,9 +1499,9 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze',
+        tool: 'research.actor.analyze',
         loading: true,
-        duration: 1000,
+        duration: 500,
         delay: 100
       },
       {
@@ -1516,24 +1516,24 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze --prompt "where is data stored?"',
+        tool: 'research.actor.analyze --prompt "where is data stored?"',
         loading: true,
         duration: 3000,
         delay: 100
       },
       {
         type: 'tool-result',
-        content: `Cache data is stored in ~/.cache/cachelyze/ and is keyed by the git commit hash. This keeps the cache outside your repository to prevent agents from accidentally reading their own cache files. Each branch and commit gets its own cache entry.`,
+        content: `Cache data is stored in ~/.cache/research.actor/ and is keyed by the git commit hash. This keeps the cache outside your repository to prevent agents from accidentally reading their own cache files. Each branch and commit gets its own cache entry.`,
         delay: 200
       },
       {
         type: 'assistant',
-        content: 'Perfect! Now I have everything I need. Cache is stored in ~/.cache/cachelyze/ keyed by git commit hash. This keeps cache outside your repo so agents never accidentally read their own cache files.',
+        content: 'Perfect! Now I have everything I need. Cache is stored in ~/.cache/research.actor/ keyed by git commit hash. This keeps cache outside your repo so agents never accidentally read their own cache files.',
         delay: 400
       }
     ];
 
-    // BEFORE cachelyze - Three separate agent threads, each exploring from scratch
+    // BEFORE research.actor - Three separate agent threads, each exploring from scratch
     const BEFORE_MESSAGES_1 = [
       {
         type: 'user',
@@ -1675,7 +1675,7 @@
       }
     ];
 
-    // AFTER cachelyze - Same three tasks, but using cached context
+    // AFTER research.actor - Same three tasks, but using cached context
     const AFTER_MESSAGES_1 = [
       {
         type: 'user',
@@ -1689,7 +1689,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze',
+        tool: 'research.actor.analyze',
         loading: true,
         duration: 500,
         delay: 100
@@ -1706,7 +1706,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze --prompt "how is JWT auth currently implemented?"',
+        tool: 'research.actor.analyze --prompt "how is JWT auth currently implemented?"',
         loading: true,
         duration: 1500,
         delay: 100
@@ -1736,7 +1736,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze',
+        tool: 'research.actor.analyze',
         loading: true,
         duration: 500,
         delay: 100
@@ -1753,7 +1753,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze --prompt "what are the current pool settings and retry logic?"',
+        tool: 'research.actor.analyze --prompt "what are the current pool settings and retry logic?"',
         loading: true,
         duration: 1500,
         delay: 100
@@ -1783,7 +1783,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze',
+        tool: 'research.actor.analyze',
         loading: true,
         duration: 500,
         delay: 100
@@ -1800,7 +1800,7 @@
       },
       {
         type: 'tool',
-        tool: 'cachelyze.analyze --prompt "what security measures are in place for payment webhooks?"',
+        tool: 'research.actor.analyze --prompt "what security measures are in place for payment webhooks?"',
         loading: true,
         duration: 1500,
         delay: 100
@@ -1912,12 +1912,12 @@
       animateChat('chat-slow', SLOW_MESSAGES, 4000);
       animateChat('chat-fast', FAST_MESSAGES, 3000);
       
-      // Before cachelyze - three separate agent threads
+      // Before research.actor - three separate agent threads
       animateChat('chat-before-1', BEFORE_MESSAGES_1, 6000);
       animateChat('chat-before-2', BEFORE_MESSAGES_2, 6000);
       animateChat('chat-before-3', BEFORE_MESSAGES_3, 6000);
       
-      // After cachelyze - same tasks with cached context
+      // After research.actor - same tasks with cached context
       animateChat('chat-after-1', AFTER_MESSAGES_1, 4000);
       animateChat('chat-after-2', AFTER_MESSAGES_2, 4000);
       animateChat('chat-after-3', AFTER_MESSAGES_3, 4000);
@@ -1950,17 +1950,17 @@
     const MICRO_AFTER_MESSAGES = [
       { type: 'user', content: 'How does auth work?', delay: 200 },
       { type: 'assistant', content: 'Using cache...', delay: 200 },
-      { type: 'tool', tool: 'cachelyze.analyze', loading: true, duration: 5000, delay: 100 },
+      { type: 'tool', tool: 'research.actor.analyze', loading: true, duration: 5000, delay: 100 },
       { type: 'assistant', content: 'JWT with passport', delay: 200 },
       { type: 'user', content: 'Explain the db schema', delay: 800 },
       { type: 'assistant', content: 'Cache loaded...', delay: 200 },
-      { type: 'tool', tool: 'cachelyze.analyze', loading: true, duration: 2500, delay: 100 },
+      { type: 'tool', tool: 'research.actor.analyze', loading: true, duration: 2500, delay: 100 },
       { type: 'assistant', content: 'PostgreSQL 12 tables', delay: 200 },
       { type: 'user', content: 'What is the api structure?', delay: 800 },
       { type: 'assistant', content: 'From cache...', delay: 200 },
-      { type: 'tool', tool: 'cachelyze.analyze', loading: true, duration: 3000, delay: 100 },
+      { type: 'tool', tool: 'research.actor.analyze', loading: true, duration: 3000, delay: 100 },
       { type: 'assistant', content: 'Quick lookup...', delay: 200 },
-      { type: 'tool', tool: 'cachelyze.analyze', loading: true, duration: 2000, delay: 100 },
+      { type: 'tool', tool: 'research.actor.analyze', loading: true, duration: 2000, delay: 100 },
       { type: 'assistant', content: 'REST + GraphQL', delay: 200 }
     ];
     

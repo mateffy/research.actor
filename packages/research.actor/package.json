@@ -1,12 +1,12 @@
 {
-  "name": "cachelyze",
+  "name": "research.actor",
   "version": "0.4.0",
-  "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching.",
-  "homepage": "https://cachelyze.com",
+  "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching. (Alias for cachelyze)",
+  "homepage": "https://research.actor",
   "repository": {
     "type": "git",
     "url": "https://github.com/mateffy/cachelyze.git",
-    "directory": "packages/cachelyze"
+    "directory": "packages/research.actor"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     }
   },
   "bin": {
-    "cachelyze": "./bin/cachelyze.js"
+    "research.actor": "./bin/research.actor.js"
   },
   "keywords": [
     "ai",
@@ -30,7 +30,8 @@
     "coding-agent",
     "opencode",
     "claude",
-    "codex"
+    "codex",
+    "research"
   ],
   "license": "MIT",
   "scripts": {

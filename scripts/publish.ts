@@ -6,6 +6,7 @@ const packages = [
   { name: "@cachelyze/core", path: "packages/core" },
   { name: "@cachelyze/cli", path: "packages/cli" },
   { name: "cachelyze", path: "packages/cachelyze" },
+  { name: "research.actor", path: "packages/research.actor" },
   { name: "@cachelyze/skill", path: "packages/skill" },
 ];
 

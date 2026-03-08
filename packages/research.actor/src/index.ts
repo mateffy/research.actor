@@ -1,20 +1,21 @@
 /**
- * cachelyze
+ * research.actor
  *
  * Cached codebase analysis for AI coding agents.
+ * This is an alias package for cachelyze.
  *
  * @alpha This package is in early development. APIs may change without notice.
  *
  * @example
  * ```ts
- * import { analyze } from "cachelyze"
+ * import { analyze } from "research.actor"
  *
  * const result = await analyze({ prompt: "focus on the auth system" })
  * console.log(result.analysis)
  * ```
  */
 
-// Re-export the full core SDK
+// Re-export everything from @cachelyze/core (same as cachelyze package)
 export {
   analyze,
   detectHarnesses,
@@ -55,10 +56,10 @@ export type {
 /**
  * Package metadata.
  */
-export const CACHELYZE_VERSION = "0.1.0" as const
+export const RESEARCH_ACTOR_VERSION = "0.2.1" as const
 
 /**
  * Alpha release notice. This package is under active development.
- * Subscribe to https://github.com/your-org/cachelyze for updates.
+ * Subscribe to https://github.com/mateffy/cachelyze for updates.
  */
 export const RELEASE_STATUS = "alpha" as const

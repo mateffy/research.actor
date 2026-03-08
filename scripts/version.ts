@@ -12,6 +12,7 @@ const packages = [
   "packages/core",
   "packages/cli", 
   "packages/cachelyze",
+  "packages/research.actor",
   "packages/skill"
 ];
 
