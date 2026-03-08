@@ -9,16 +9,16 @@ import { clearCommand } from "./commands/clear.js"
  * Bare `cachelyze [flags]` runs the analysis directly (same as `cachelyze analyze`).
  * The `clear` subcommand removes all cached analyses for the current repo.
  *
- * citty routes to a subcommand when the first argument matches a known subcommand
- * name; otherwise it falls through to the root `run`, which is the analyze logic.
+ * The root command has no run handler - it either shows help (no args) or
+ * delegates to subcommands. For bare invocations with flags, users should
+ * use the explicit `analyze` subcommand.
  */
 const main = defineCommand({
-  ...analyzeCommand,
   meta: {
     name: "cachelyze",
     description:
       "Cached codebase analysis for AI agents. " +
-      "Run without a subcommand to analyze the current repo.",
+      "Run `cachelyze analyze` to analyze the current repo.",
   },
   subCommands: {
     analyze: analyzeCommand,

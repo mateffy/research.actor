@@ -2753,10 +2753,9 @@ var clearCommand = defineCommand({
 
 // src/index.ts
 var main = defineCommand({
-  ...analyzeCommand,
   meta: {
     name: "cachelyze",
-    description: "Cached codebase analysis for AI agents. " + "Run without a subcommand to analyze the current repo."
+    description: "Cached codebase analysis for AI agents. " + "Run `cachelyze analyze` to analyze the current repo."
   },
   subCommands: {
     analyze: analyzeCommand,
