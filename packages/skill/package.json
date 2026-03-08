@@ -1,0 +1,38 @@
+{
+  "name": "@cachelyze/skill",
+  "version": "0.1.0",
+  "description": "Agent skill for cachelyze — teaches AI agents how to use cachelyze effectively",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./skill": {
+      "import": "./cachelyze-analyze/SKILL.md"
+    }
+  },
+  "files": [
+    "dist",
+    "cachelyze-analyze"
+  ],
+  "keywords": [
+    "ai",
+    "agent-skill",
+    "agentskills",
+    "cachelyze",
+    "skill"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm && bun run typecheck",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/node": "^22.0.0"
+  }
+}

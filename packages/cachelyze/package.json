@@ -1,0 +1,43 @@
+{
+  "name": "cachelyze",
+  "version": "0.1.0",
+  "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "cachelyze": "./bin/cachelyze.js"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "cache",
+    "codebase",
+    "analysis",
+    "llm",
+    "coding-agent",
+    "opencode",
+    "claude",
+    "codex"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm && bun run typecheck",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cachelyze/core": "workspace:*",
+    "@cachelyze/cli": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/node": "^22.0.0"
+  }
+}

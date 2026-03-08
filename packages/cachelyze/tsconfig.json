@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDirs": ["./src", "../core/src", "../cli/src"],
+    "paths": {
+      "@cachelyze/core": ["../core/src/index.ts"],
+      "@cachelyze/cli": ["../cli/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "../core/src/**/*", "../cli/src/**/*"]
+}
