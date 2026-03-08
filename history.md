@@ -1007,7 +1007,7 @@ The user wants more gap between the hero icon and the main text. Let me look at 
 <section class="hero-section">
   <div style="position: relative;">
     <div class="hero-image">
-      <img src="cachelyze.webp" alt="cachelyze logo" width="200" height="200" style="width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.3));" />
+      <img src="icon.webp" alt="cachelyze logo" width="200" height="200" style="width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.3));" />
     </div>
     <div style="position: absolute; top: -10px; right: -20px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--accent); letter-spacing: 0.15em; transform: rotate(-90deg); transform-origin: right top;">
       SN: CACH-2025-X9

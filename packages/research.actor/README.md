@@ -1,6 +1,6 @@
 # research
 
-Cached codebase analysis for AI coding agents — stop re-exploring, start caching.
+Cacheable codebase exploration for AI coding agents — stop re-exploring, start caching.
 
 [![npm version](https://img.shields.io/npm/v/research.svg)](https://www.npmjs.com/package/research)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

@@ -2,7 +2,7 @@
 
 > **Alpha — work in progress.** APIs and CLI interface may change without notice.
 
-Cached codebase analysis for AI coding agents.
+Cacheable codebase exploration for AI coding agents.
 
 **Website:** [research](https://research)  
 **Repository:** [github.com/mateffy/research](https://github.com/mateffy/research)
