@@ -3,14 +3,14 @@
 </picture>
 
 <picture height="0">
-  <source media="(min-width: 769px)" srcset="./docs/pixel.webp" width="0" height="0">
+  <source media="(min-width: 769px)" srcset="./docs/pixel.png" width="0" height="0">
   <img src="./docs/icon.webp" alt="research.actor Logo" width="150">
 </picture>
 
 <div>
     <h1>
         <picture>
-            <source media="(max-width: 768px)" srcset="./docs/pixel.webp" width="0" height="0">
+            <source media="(max-width: 768px)" srcset="./docs/pixel.png" width="0" height="0">
             <img src="./docs/icon.webp" alt="research.actor Logo" width="225" align="left">
         </picture>
         research.actor
