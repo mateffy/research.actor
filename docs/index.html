@@ -756,6 +756,56 @@
       border: 1px solid rgba(251, 191, 36, 0.2);
     }
 
+    /* Micro terminal comparison - positioned in CLI demo card */
+    .micro-terminals-container {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      max-width: 50%;
+      z-index: 10;
+    }
+
+    .micro-terminal {
+      background: rgba(10, 10, 10, 0.95);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 3px;
+      padding: 4px 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 7px;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.8);
+      width: 90px;
+      height: 70px;
+      overflow: hidden;
+    }
+
+    .micro-terminal.before {
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .micro-terminal.after {
+      border-color: rgba(39, 201, 63, 0.4);
+    }
+
+    .micro-chat-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+    }
+
+    .micro-spinner {
+      display: inline-block;
+      width: 1ch;
+      color: var(--accent);
+    }
+
+    .micro-timer {
+      color: var(--text-muted);
+    }
+
     .terminal-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -827,9 +877,8 @@
         <div class="hero-phonetic" style="font-family: 'Share Tech Mono', monospace;">/agent</div>
         <h1 class="hero-title"><span id="hero-spinner" style="display: inline-block; margin-right: 16px;">⠋</span>cachelyze</h1>
         <p class="hero-description">
-          <strong>Stop re-exploring. Start caching.</strong><br/>
-          Every agent session wastes tokens re-reading your codebase.<br/>
-          Run a full analysis once per git commit, cache it, and serve it instantly.
+          <strong style="color: var(--heading);">Every agent session wastes tokens re-reading your codebase.</strong><br/>
+          With cachelyze you run a full research agent once per git commit, cache its analysis, and return it instantly to other agents. Saves time and tokens. Used as a baseline for deeper research.
         </p>
       </div>
     </section>
@@ -837,7 +886,7 @@
     <!-- CLI Demo -->
     <section>
       <h2>Get codebase context in your agent in one command</h2>
-      <div class="card" style="height: 222px;">
+      <div class="card" style="height: 222px; position: relative;">
         <div class="terminal-demo" id="terminal-demo">
           <div class="terminal-line">
             <span class="terminal-prompt">$</span>
@@ -851,6 +900,12 @@
             </div>
           </div>
           <div id="output-line" style="display: none;"></div>
+        </div>
+        
+        <!-- Micro terminal comparison -->
+        <div class="micro-terminals-container">
+          <div class="micro-terminal before" id="micro-before"></div>
+          <div class="micro-terminal after" id="micro-after"></div>
         </div>
       </div>
     </section>
@@ -1827,7 +1882,294 @@
       animateChat('chat-after-1', AFTER_MESSAGES_1, 4000);
       animateChat('chat-after-2', AFTER_MESSAGES_2, 4000);
       animateChat('chat-after-3', AFTER_MESSAGES_3, 4000);
+      
+      // Micro terminal animations in CLI demo
+      animateMicroTerminals();
     });
+    
+    // Micro terminal conversation data - continuous subagent/tool calls
+    const MICRO_BEFORE_MESSAGES = [
+      {
+        type: 'user',
+        content: 'Fix the bug',
+        delay: 200
+      },
+      {
+        type: 'assistant',
+        content: 'Exploring codebase structure...',
+        delay: 300
+      },
+      {
+        type: 'tool',
+        tool: 'subagent.explore',
+        loading: true,
+        duration: 6000,
+        delay: 100
+      },
+      {
+        type: 'tool-result',
+        content: 'Found: Express server at src/server.ts, routes at src/routes/, db at src/db/',
+        delay: 200
+      },
+      {
+        type: 'assistant',
+        content: 'Now reading the bug location...',
+        delay: 300
+      },
+      {
+        type: 'tool',
+        tool: 'subagent.read_file',
+        loading: true,
+        duration: 2000,
+        delay: 100
+      },
+      {
+        type: 'tool-result',
+        content: 'File shows auth middleware bug at line 45 - missing null check',
+        delay: 200
+      },
+      {
+        type: 'assistant',
+        content: 'Found it! Now I can fix...',
+        delay: 200
+      },
+      {
+        type: 'user',
+        content: 'Add feature X',
+        delay: 600
+      },
+      {
+        type: 'assistant',
+        content: 'Exploring codebase again...',
+        delay: 300
+      },
+      {
+        type: 'tool',
+        tool: 'subagent.explore',
+        loading: true,
+        duration: 6000,
+        delay: 100
+      },
+      {
+        type: 'tool-result',
+        content: 'Found: Feature modules at src/features/, existing patterns analyzed',
+        delay: 200
+      },
+      {
+        type: 'assistant',
+        content: 'Analyzing dependencies...',
+        delay: 300
+      },
+      {
+        type: 'tool',
+        tool: 'subagent.read_file',
+        loading: true,
+        duration: 2000,
+        delay: 100
+      },
+      {
+        type: 'tool-result',
+        content: 'Dependencies mapped. Ready to implement feature X',
+        delay: 200
+      },
+      {
+        type: 'assistant',
+        content: 'Ready to add feature!',
+        delay: 200
+      }
+    ];
+
+    const MICRO_AFTER_MESSAGES = [
+      {
+        type: 'user',
+        content: 'Fix the bug',
+        delay: 200
+      },
+      {
+        type: 'assistant',
+        content: 'Using cached analysis...',
+        delay: 200
+      },
+      {
+        type: 'tool',
+        tool: 'cachelyze.analyze',
+        loading: true,
+        duration: 800,
+        delay: 100
+      },
+      {
+        type: 'tool-result',
+        content: 'Cache hit: Codebase structure loaded. Auth middleware at src/middleware/auth.ts',
+        delay: 100
+      },
+      {
+        type: 'assistant',
+        content: 'Found the bug location!',
+        delay: 200
+      },
+      {
+        type: 'tool',
+        tool: 'cachelyze.analyze --prompt "what is the bug at line 45?"',
+        loading: true,
+        duration: 800,
+        delay: 300
+      },
+      {
+        type: 'tool-result',
+        content: 'Missing null check in auth middleware causes crash on undefined user',
+        delay: 100
+      },
+      {
+        type: 'assistant',
+        content: 'Bug fixed!',
+        delay: 200
+      },
+      {
+        type: 'user',
+        content: 'Add feature X',
+        delay: 600
+      },
+      {
+        type: 'assistant',
+        content: 'Cache already loaded...',
+        delay: 200
+      },
+      {
+        type: 'tool',
+        tool: 'cachelyze.analyze',
+        loading: true,
+        duration: 800,
+        delay: 100
+      },
+      {
+        type: 'tool-result',
+        content: 'Cache hit: Feature patterns at src/features/, dependencies mapped',
+        delay: 100
+      },
+      {
+        type: 'assistant',
+        content: 'Quick check on feature requirements...',
+        delay: 300
+      },
+      {
+        type: 'tool',
+        tool: 'cachelyze.analyze --prompt "how to add new feature module?"',
+        loading: true,
+        duration: 800,
+        delay: 300
+      },
+      {
+        type: 'tool-result',
+        content: 'Follow existing pattern: create src/features/x/, add to router, register in index.ts',
+        delay: 100
+      },
+      {
+        type: 'assistant',
+        content: 'Feature added!',
+        delay: 200
+      }
+    ];
+
+    // Simplified micro terminal - cycles through tool calls showing timing
+    function animateMicroTerminals() {
+      const beforeContainer = document.getElementById('micro-before');
+      const afterContainer = document.getElementById('micro-after');
+      
+      if (!beforeContainer || !afterContainer) return;
+      
+      const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+      
+      // Before: Continuous subagent calls
+      const beforeTools = [
+        { name: 'subagent.explore', duration: 6000 },
+        { name: 'subagent.read', duration: 2000 },
+        { name: 'subagent.explore', duration: 6000 },
+        { name: 'subagent.analyze', duration: 3000 }
+      ];
+      
+      // After: Cachelyze calls
+      const afterTools = [
+        { name: 'cachelyze.analyze', duration: 800 },
+        { name: 'cachelyze.analyze', duration: 800 },
+        { name: 'cachelyze.analyze', duration: 800 },
+        { name: 'cachelyze.analyze', duration: 800 }
+      ];
+      
+      let beforeIndex = 0;
+      let afterIndex = 0;
+      let frame = 0;
+      let beforeStep = 0;
+      let afterStep = 0;
+      
+      function updateBefore() {
+        const tool = beforeTools[beforeIndex];
+        frame = (frame + 1) % SPINNER_FRAMES.length;
+        
+        if (beforeStep < tool.duration / 100) {
+          // Loading
+          beforeContainer.innerHTML = `
+            <div class="micro-chat-line">
+              <span style="color:var(--accent);display:inline-block;width:1em;text-align:center;">${SPINNER_FRAMES[frame]}</span>
+              <span style="color:#fbbf24;">${tool.name}</span>
+              <span style="color:#71717a;margin-left:4px;">${(beforeStep / 10).toFixed(1)}s</span>
+            </div>
+          `;
+        } else {
+          // Done
+          beforeContainer.innerHTML = `
+            <div class="micro-chat-line">
+              <span style="color:#27c93f;display:inline-block;width:1em;text-align:center;">✓</span>
+              <span style="color:#fbbf24;">${tool.name}</span>
+              <span style="color:#71717a;margin-left:4px;">${(tool.duration/1000).toFixed(1)}s</span>
+            </div>
+          `;
+          
+          setTimeout(() => {
+            beforeIndex = (beforeIndex + 1) % beforeTools.length;
+            beforeStep = 0;
+          }, 500);
+        }
+        
+        beforeStep++;
+      }
+      
+      function updateAfter() {
+        const tool = afterTools[afterIndex];
+        frame = (frame + 1) % SPINNER_FRAMES.length;
+        
+        if (afterStep < tool.duration / 100) {
+          // Loading
+          afterContainer.innerHTML = `
+            <div class="micro-chat-line">
+              <span style="color:var(--accent);display:inline-block;width:1em;text-align:center;">${SPINNER_FRAMES[frame]}</span>
+              <span style="color:#fbbf24;">${tool.name}</span>
+              <span style="color:#71717a;margin-left:4px;">${(afterStep / 10).toFixed(1)}s</span>
+            </div>
+          `;
+        } else {
+          // Done
+          afterContainer.innerHTML = `
+            <div class="micro-chat-line">
+              <span style="color:#27c93f;display:inline-block;width:1em;text-align:center;">✓</span>
+              <span style="color:#fbbf24;">${tool.name}</span>
+              <span style="color:#71717a;margin-left:4px;">${(tool.duration/1000).toFixed(1)}s</span>
+            </div>
+          `;
+          
+          setTimeout(() => {
+            afterIndex = (afterIndex + 1) % afterTools.length;
+            afterStep = 0;
+          }, 300);
+        }
+        
+        afterStep++;
+      }
+      
+      setInterval(() => {
+        updateBefore();
+        updateAfter();
+      }, 100);
+    }
   </script>
 </body>
 </html>
