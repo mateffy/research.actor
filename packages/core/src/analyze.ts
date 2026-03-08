@@ -66,6 +66,7 @@ export async function analyze(opts: AnalyzeOptions = {}): Promise<AnalyzeResult>
       prompt: basePrompt,
       cwd: git.repoRoot,
       ...(opts.model !== undefined ? { model: opts.model } : {}),
+      ...(opts.stream !== undefined ? { stream: opts.stream } : {}),
     })
     baseAnalysis = result.output
 
@@ -90,6 +91,7 @@ export async function analyze(opts: AnalyzeOptions = {}): Promise<AnalyzeResult>
       prompt: workingPrompt,
       cwd: git.repoRoot,
       ...(opts.model !== undefined ? { model: opts.model } : {}),
+      ...(opts.stream !== undefined ? { stream: opts.stream } : {}),
     })
     finalAnalysis = result.output
   }

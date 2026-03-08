@@ -31,6 +31,12 @@ export interface RunRequest {
    * if the underlying agent does not support model selection.
    */
   readonly model?: string
+  /**
+   * Whether to stream stdout to process.stdout in real-time for live UX.
+   * Defaults to true. Set to false when capturing output programmatically
+   * (e.g., for JSON mode) to avoid mixing streamed output with other stdout.
+   */
+  readonly stream?: boolean
 }
 
 /**
@@ -207,6 +213,12 @@ export interface AnalyzeOptions {
    * to the runner via `RunRequest.model`, but harness auto-detection is skipped.
    */
   readonly runner?: HarnessRunner
+  /**
+   * Whether to stream the harness output to stdout in real-time.
+   * Defaults to true. Set to false when programmatically capturing output
+   * to avoid mixing streamed content with other stdout.
+   */
+  readonly stream?: boolean
 }
 
 export interface AnalyzeResult {

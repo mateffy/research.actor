@@ -147,21 +147,33 @@ export class SubprocessRunner implements HarnessRunner {
   }
 
   async run(request: RunRequest): Promise<RunResult> {
-    const { prompt, cwd, model } = request
+    const { prompt, cwd, model, stream = true } = request
     const args = this.harness.buildArgs(prompt, model)
+
+    // For opencode, strip env vars that break `opencode run` when desktop app is active
+    // See: https://github.com/anomalyco/opencode/issues/14532
+    const env = { ...process.env }
+    if (this.name === "opencode") {
+      delete env.OPENCODE_SERVER_PASSWORD
+      delete env.OPENCODE_SERVER_USERNAME
+      delete env.OPENCODE_CLIENT
+    }
 
     return new Promise<RunResult>((resolve, reject) => {
       const child = spawn(this.harness.binPath, [...args], {
         cwd,
         stdio: ["inherit", "pipe", "pipe"],
+        env,
       })
 
       const chunks: Buffer[] = []
 
       child.stdout.on("data", (chunk: Buffer) => {
         chunks.push(chunk)
-        // Stream to stdout for live UX feedback
-        process.stdout.write(chunk)
+        // Stream to stdout for live UX feedback (unless disabled)
+        if (stream) {
+          process.stdout.write(chunk)
+        }
       })
 
       child.stderr.on("data", (chunk: Buffer) => {

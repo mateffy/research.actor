@@ -2340,17 +2340,26 @@ class SubprocessRunner {
     this.name = harness.name;
   }
   async run(request) {
-    const { prompt: prompt2, cwd, model } = request;
+    const { prompt: prompt2, cwd, model, stream = true } = request;
     const args = this.harness.buildArgs(prompt2, model);
+    const env2 = { ...process.env };
+    if (this.name === "opencode") {
+      delete env2.OPENCODE_SERVER_PASSWORD;
+      delete env2.OPENCODE_SERVER_USERNAME;
+      delete env2.OPENCODE_CLIENT;
+    }
     return new Promise((resolve, reject) => {
       const child = spawn(this.harness.binPath, [...args], {
         cwd,
-        stdio: ["inherit", "pipe", "pipe"]
+        stdio: ["inherit", "pipe", "pipe"],
+        env: env2
       });
       const chunks = [];
       child.stdout.on("data", (chunk) => {
         chunks.push(chunk);
-        process.stdout.write(chunk);
+        if (stream) {
+          process.stdout.write(chunk);
+        }
       });
       child.stderr.on("data", (chunk) => {
         process.stderr.write(chunk);
@@ -2546,7 +2555,8 @@ async function analyze(opts = {}) {
     const result = await runner.run({
       prompt: basePrompt,
       cwd: git2.repoRoot,
-      ...opts.model !== undefined ? { model: opts.model } : {}
+      ...opts.model !== undefined ? { model: opts.model } : {},
+      ...opts.stream !== undefined ? { stream: opts.stream } : {}
     });
     baseAnalysis = result.output;
     const entry = {
@@ -2567,7 +2577,8 @@ async function analyze(opts = {}) {
     const result = await runner.run({
       prompt: workingPrompt,
       cwd: git2.repoRoot,
-      ...opts.model !== undefined ? { model: opts.model } : {}
+      ...opts.model !== undefined ? { model: opts.model } : {},
+      ...opts.stream !== undefined ? { stream: opts.stream } : {}
     });
     finalAnalysis = result.output;
   }
@@ -2688,7 +2699,8 @@ var analyzeCommand = defineCommand({
       ...args.model !== undefined ? { model: args.model } : {},
       ...args["system-prompt"] !== undefined ? { systemPrompt: args["system-prompt"] } : {},
       ...args.prompt !== undefined ? { prompt: args.prompt } : {},
-      ...maxAge !== undefined ? { maxAge } : {}
+      ...maxAge !== undefined ? { maxAge } : {},
+      ...isJson ? { stream: false } : {}
     });
     if (isJson) {
       const output = {
@@ -2699,6 +2711,8 @@ var analyzeCommand = defineCommand({
         runner: result.runner
       };
       console.log(JSON.stringify(output, null, 2));
+    } else {
+      console.log(result.analysis);
     }
   }
 });

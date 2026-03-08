@@ -172,17 +172,26 @@ class SubprocessRunner {
     this.name = harness.name;
   }
   async run(request) {
-    const { prompt, cwd, model } = request;
+    const { prompt, cwd, model, stream = true } = request;
     const args = this.harness.buildArgs(prompt, model);
+    const env = { ...process.env };
+    if (this.name === "opencode") {
+      delete env.OPENCODE_SERVER_PASSWORD;
+      delete env.OPENCODE_SERVER_USERNAME;
+      delete env.OPENCODE_CLIENT;
+    }
     return new Promise((resolve, reject) => {
       const child = spawn(this.harness.binPath, [...args], {
         cwd,
-        stdio: ["inherit", "pipe", "pipe"]
+        stdio: ["inherit", "pipe", "pipe"],
+        env
       });
       const chunks = [];
       child.stdout.on("data", (chunk) => {
         chunks.push(chunk);
-        process.stdout.write(chunk);
+        if (stream) {
+          process.stdout.write(chunk);
+        }
       });
       child.stderr.on("data", (chunk) => {
         process.stderr.write(chunk);
@@ -387,7 +396,8 @@ async function analyze(opts = {}) {
     const result = await runner.run({
       prompt: basePrompt,
       cwd: git2.repoRoot,
-      ...opts.model !== undefined ? { model: opts.model } : {}
+      ...opts.model !== undefined ? { model: opts.model } : {},
+      ...opts.stream !== undefined ? { stream: opts.stream } : {}
     });
     baseAnalysis = result.output;
     const entry = {
@@ -408,7 +418,8 @@ async function analyze(opts = {}) {
     const result = await runner.run({
       prompt: workingPrompt,
       cwd: git2.repoRoot,
-      ...opts.model !== undefined ? { model: opts.model } : {}
+      ...opts.model !== undefined ? { model: opts.model } : {},
+      ...opts.stream !== undefined ? { stream: opts.stream } : {}
     });
     finalAnalysis = result.output;
   }

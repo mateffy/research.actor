@@ -138,6 +138,8 @@ export const analyzeCommand = defineCommand({
       ...(args["system-prompt"] !== undefined ? { systemPrompt: args["system-prompt"] } : {}),
       ...(args.prompt !== undefined ? { prompt: args.prompt } : {}),
       ...(maxAge !== undefined ? { maxAge } : {}),
+      // Disable streaming when in JSON mode to avoid corrupting output
+      ...(isJson ? { stream: false } : {}),
     })
 
     if (isJson) {
@@ -149,6 +151,8 @@ export const analyzeCommand = defineCommand({
         runner: result.runner,
       }
       console.log(JSON.stringify(output, null, 2))
+    } else {
+      console.log(result.analysis)
     }
   },
 })
