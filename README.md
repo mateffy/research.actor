@@ -8,7 +8,7 @@
     <h1>
         <picture>
             <source media="(max-width: 768px)" srcset="./docs/pixel.png" width="0" height="0">
-            <img src="./docs/icon.webp" alt="research.actor Logo" width="225" align="left">
+            <img src="./docs/icon-padded.webp" alt="research.actor Logo" width="225" align="left">
         </picture>
         research.actor
     </h1>
