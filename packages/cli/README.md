@@ -2,9 +2,9 @@
 
 > **Alpha — work in progress.** CLI interface may change without notice.
 
-Command-line interface for cachelyze — cached codebase analysis for AI coding agents.
+Command-line interface for research.actor — cached codebase analysis for AI coding agents.
 
-This package provides the CLI for cachelyze. For programmatic SDK access, use [`@cachelyze/core`](https://www.npmjs.com/package/@cachelyze/core). For the full package with both CLI and SDK, see [`cachelyze`](https://www.npmjs.com/package/cachelyze).
+This package provides the CLI for research.actor. For programmatic SDK access, use [`@cachelyze/core`](https://www.npmjs.com/package/@cachelyze/core). For the full package with both CLI and SDK, see [`research.actor`](https://www.npmjs.com/package/research.actor).
 
 **Website:** [research.actor](https://research.actor)  
 **Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
@@ -35,13 +35,13 @@ bun add @cachelyze/cli
 
 ```sh
 # Basic — auto-detects installed harness, uses persistent cache
-cachelyze
+research.actor
 
 # Targeted question about current working diff (never cached)
-cachelyze --prompt "what auth changes are in progress?"
+research.actor --prompt "what auth changes are in progress?"
 
 # Customize the analysis focus — stored as separate cache entry
-cachelyze --system-prompt "focus on the API layer and data models"
+research.actor --system-prompt "focus on the API layer and data models"
 ```
 
 ---
@@ -52,11 +52,11 @@ cachelyze --system-prompt "focus on the API layer and data models"
 
 ```sh
 # Analyze (default)
-cachelyze
-cachelyze analyze
+research.actor
+research.actor analyze
 
 # Clear all cached analyses for current repository
-cachelyze clear
+research.actor clear
 ```
 
 ### Flags
@@ -76,22 +76,22 @@ cachelyze clear
 
 ```sh
 # Specify harness and model
-cachelyze --harness claude --model claude-opus-4-5
+research.actor --harness claude --model claude-opus-4-5
 
 # Force fresh analysis
-cachelyze --force
+research.actor --force
 
 # Only use cache if younger than 2 hours
-cachelyze --max-age 2h
+research.actor --max-age 2h
 
 # JSON output for scripting
-cachelyze --json
+research.actor --json
 
 # List available harnesses
-cachelyze --list-harnesses
+research.actor --list-harnesses
 
 # Clear cache for this project
-cachelyze clear
+research.actor clear
 ```
 
 ---
@@ -110,7 +110,7 @@ cachelyze clear
 
 ## Cache Location
 
-Cache files are stored in `~/.cache/cachelyze/<project-key>/` — outside the repository so agents don't accidentally read them. Respects `XDG_CACHE_HOME`.
+Cache files are stored in `~/.cache/research.actor/<project-key>/` — outside the repository so agents don't accidentally read them. Respects `XDG_CACHE_HOME`.
 
 ---
 
@@ -124,10 +124,10 @@ For SDK usage, programmatic API, and advanced examples, see the [main README](ht
 
 | Package | Description |
 |---------|-------------|
-| `cachelyze` | Full package — SDK + CLI |
+| `research.actor` | Full package — SDK + CLI |
 | `@cachelyze/core` | SDK only |
 | `@cachelyze/cli` | **CLI only** (this package) |
-| `@cachelyze/skill` | Agent skill for teaching agents to use cachelyze |
+| `@cachelyze/skill` | Agent skill for teaching agents to use research.actor |
 
 ---
 

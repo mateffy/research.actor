@@ -2,9 +2,9 @@
 
 > **Alpha — work in progress.**
 
-Agent skill for cachelyze — teaches AI agents how to use cachelyze effectively.
+Agent skill for research.actor — teaches AI agents how to use research.actor effectively.
 
-This package provides a [Agent Skill](https://agentskills.io) that helps AI coding agents understand and use cachelyze. It includes best practices, usage patterns, and integration guides.
+This package provides a [Agent Skill](https://agentskills.io) that helps AI coding agents understand and use research.actor. It includes best practices, usage patterns, and integration guides.
 
 **Website:** [research.actor](https://research.actor)  
 **Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
@@ -30,7 +30,7 @@ A "skill" is a teaching resource for AI agents. It provides:
 - Common pitfalls and how to avoid them
 - Configuration recommendations
 
-When an AI agent has access to this skill, it can more effectively use cachelyze to analyze codebases.
+When an AI agent has access to this skill, it can more effectively use research.actor to analyze codebases.
 
 ---
 
@@ -41,21 +41,21 @@ When an AI agent has access to this skill, it can more effectively use cachelyze
 Once this package is installed in your project, AI agents can reference the skill:
 
 ```
-Use the cachelyze skill to analyze this codebase.
+Use the research.actor skill to analyze this codebase.
 ```
 
 The skill will guide the agent on:
-- When to run cachelyze
+- When to run research.actor
 - How to interpret results
 - Best practices for cached analysis
 - Integration with different harnesses (Claude, OpenCode, Codex, etc.)
 
 ### For Developers
 
-Install this skill package alongside cachelyze:
+Install this skill package alongside research.actor:
 
 ```sh
-npm install cachelyze @cachelyze/skill
+npm install research.actor @cachelyze/skill
 ```
 
 The skill is automatically available to compatible agents.
@@ -66,7 +66,7 @@ The skill is automatically available to compatible agents.
 
 The skill includes:
 
-- **Usage patterns** — When and how to use cachelyze effectively
+- **Usage patterns** — When and how to use research.actor effectively
 - **CLI reference** — Quick reference for common commands
 - **SDK patterns** — How to use the SDK programmatically
 - **Integration guides** — Working with different AI harnesses
@@ -84,7 +84,7 @@ For complete documentation, see the [main README](https://github.com/mateffy/res
 
 | Package | Description |
 |---------|-------------|
-| `cachelyze` | Full package — SDK + CLI |
+| `research.actor` | Full package — SDK + CLI |
 | `@cachelyze/core` | SDK only |
 | `@cachelyze/cli` | CLI only |
 | `@cachelyze/skill` | **Agent skill** (this package) |

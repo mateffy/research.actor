@@ -1,21 +1,21 @@
 ---
-name: cachelyze-analyze
+name: research.actor-analyze
 description: >
-  Use cachelyze to get an instant, cached analysis of the current codebase instead of
-  exploring the repository from scratch. Run `cachelyze` at the start of any session to
+  Use research.actor to get an instant, cached analysis of the current codebase instead of
+  exploring the repository from scratch. Run `research.actor` at the start of any session to
   understand the codebase structure, architecture, and current working changes. Significantly
   reduces token usage by caching analyses per git commit and only re-analyzing uncommitted diffs.
 license: MIT
-compatibility: Requires cachelyze to be installed (npm install -g cachelyze). Requires git.
+compatibility: Requires research.actor to be installed (npm install -g research.actor). Requires git.
 metadata:
-  author: cachelyze
+  author: research.actor
   version: "0.1"
-allowed-tools: Bash(cachelyze:*)
+allowed-tools: Bash(research.actor:*)
 ---
 
-# cachelyze — Cached Codebase Analysis
+# research.actor — Cached Codebase Analysis
 
-`cachelyze` is a CLI tool that gives you a cached, structured overview of the current codebase.
+`research.actor` is a CLI tool that gives you a cached, structured overview of the current codebase.
 Use it at the start of a session or task instead of manually exploring files and directories.
 
 ## When to use this skill
@@ -26,21 +26,21 @@ Use it at the start of a session or task instead of manually exploring files and
 - When working with an unfamiliar codebase
 - When you need to understand the impact of in-progress (uncommitted) changes
 
-**Do not** spin up a sub-agent to explore the codebase if `cachelyze` is available.
-Prefer `cachelyze` — it is faster, cheaper, and consistent.
+**Do not** spin up a sub-agent to explore the codebase if `research.actor` is available.
+Prefer `research.actor` — it is faster, cheaper, and consistent.
 
 ## Basic usage
 
 Run with no arguments for a full codebase analysis:
 
 ```bash
-cachelyze
+research.actor
 ```
 
 The first call on a new git commit runs a full analysis (takes 30–120 seconds depending on
 codebase size). All subsequent calls on the same commit return the cached result instantly.
 
-If there are uncommitted working changes, `cachelyze` automatically runs a lightweight
+If there are uncommitted working changes, `research.actor` automatically runs a lightweight
 secondary pass that discovers and incorporates the diff on top of the cached analysis.
 
 ## Targeted queries with --prompt
@@ -50,9 +50,9 @@ This is passed only to the working-changes agent — never cached — and layere
 of the cached base analysis:
 
 ```bash
-cachelyze --prompt "what does the authentication flow look like?"
-cachelyze --prompt "which modules would be affected by changing the User model?"
-cachelyze --prompt "summarize what the in-progress changes are doing"
+research.actor --prompt "what does the authentication flow look like?"
+research.actor --prompt "which modules would be affected by changing the User model?"
+research.actor --prompt "summarize what the in-progress changes are doing"
 ```
 
 This is the **preferred** way to ask targeted questions. It gives the analysis agent both
@@ -64,8 +64,8 @@ Use `--system-prompt` to change what the *cached* analysis focuses on. Each dist
 system prompt produces a separate cache entry:
 
 ```bash
-cachelyze --system-prompt "focus on the API layer, data models, and database schema"
-cachelyze --system-prompt "focus on the frontend component hierarchy and state management"
+research.actor --system-prompt "focus on the API layer, data models, and database schema"
+research.actor --system-prompt "focus on the frontend component hierarchy and state management"
 ```
 
 Use this when you need a cached analysis oriented toward a specific domain of the codebase.
@@ -73,12 +73,12 @@ Unlike `--prompt`, this affects the full analysis that gets cached.
 
 ## Selecting a harness
 
-`cachelyze` auto-detects installed coding harnesses. Override with `--harness`:
+`research.actor` auto-detects installed coding harnesses. Override with `--harness`:
 
 ```bash
-cachelyze --harness claude
-cachelyze --harness opencode
-cachelyze --harness codex
+research.actor --harness claude
+research.actor --harness opencode
+research.actor --harness codex
 ```
 
 See [references/harnesses.md](references/harnesses.md) for the full list of supported harnesses.
@@ -86,10 +86,10 @@ See [references/harnesses.md](references/harnesses.md) for the full list of supp
 ## Other useful flags
 
 ```bash
-cachelyze --model claude-opus-4-5     # specify model for the harness
-cachelyze --force                      # bypass cache, re-run full analysis
-cachelyze --json                       # output as JSON (for programmatic use)
-cachelyze --list-harnesses             # show which harnesses are installed
+research.actor --model claude-opus-4-5     # specify model for the harness
+research.actor --force                      # bypass cache, re-run full analysis
+research.actor --json                       # output as JSON (for programmatic use)
+research.actor --list-harnesses             # show which harnesses are installed
 ```
 
 ## Understanding the output
@@ -126,7 +126,7 @@ may still have run on top if uncommitted changes were detected.
 
 ## Cache location
 
-Caches are stored in `~/.cache/cachelyze/<project-key>/` — outside the repository,
+Caches are stored in `~/.cache/research.actor/<project-key>/` — outside the repository,
 so agents will not accidentally read stale or incorrect analysis files.
 
 Each cache file is named `<git-hash>.json` (or `<git-hash>-<system-prompt-hash>.json`

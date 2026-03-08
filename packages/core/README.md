@@ -2,9 +2,9 @@
 
 > **Alpha — work in progress.** APIs may change without notice.
 
-Core SDK for cachelyze — cached codebase analysis for AI coding agents.
+Core SDK for research.actor — cached codebase analysis for AI coding agents.
 
-This package contains the core business logic and SDK for programmatic use. For the full package with CLI included, see [`cachelyze`](https://www.npmjs.com/package/cachelyze).
+This package contains the core business logic and SDK for programmatic use. For the full package with CLI included, see [`research.actor`](https://www.npmjs.com/package/research.actor).
 
 **Website:** [research.actor](https://research.actor)  
 **Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
@@ -159,7 +159,7 @@ interface AnalyzeResult {
 
 ### `class FsStore`
 
-Filesystem-backed cache store. Stores entries as JSON under `~/.cache/cachelyze/`.
+Filesystem-backed cache store. Stores entries as JSON under `~/.cache/research.actor/`.
 
 ```ts
 new FsStore(baseDir?: string)
@@ -205,10 +205,10 @@ For complete documentation including CLI usage, all configuration options, and a
 
 | Package | Description |
 |---------|-------------|
-| `cachelyze` | Full package — SDK + CLI |
+| `research.actor` | Full package — SDK + CLI |
 | `@cachelyze/core` | **SDK only** (this package) |
 | `@cachelyze/cli` | CLI only |
-| `@cachelyze/skill` | Agent skill for teaching agents to use cachelyze |
+| `@cachelyze/skill` | Agent skill for teaching agents to use research.actor |
 
 ---
 
