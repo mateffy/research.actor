@@ -1,6 +1,6 @@
 {
   "name": "@research.actor/core",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Core business logic for research — cached codebase analysis for AI agents",
   "homepage": "https://research.actor",
   "repository": {

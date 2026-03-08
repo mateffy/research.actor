@@ -1,6 +1,6 @@
 {
   "name": "@research.actor/cli",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "CLI for research — cached codebase analysis for AI agents",
   "homepage": "https://research.actor",
   "repository": {

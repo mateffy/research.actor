@@ -1,6 +1,6 @@
 {
   "name": "cachelyze",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching.",
   "homepage": "https://research.actor",
   "repository": {
