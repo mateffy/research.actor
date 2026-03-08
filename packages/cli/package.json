@@ -1,6 +1,6 @@
 {
   "name": "@cachelyze/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CLI for cachelyze — cached codebase analysis for AI agents",
   "homepage": "https://cachelyze.com",
   "repository": {
@@ -18,6 +18,10 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm && bun run typecheck",
     "typecheck": "tsc --noEmit",

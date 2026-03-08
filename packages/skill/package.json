@@ -1,6 +1,6 @@
 {
   "name": "@cachelyze/skill",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Agent skill for cachelyze — teaches AI agents how to use cachelyze effectively",
   "homepage": "https://cachelyze.com",
   "repository": {
@@ -22,7 +22,8 @@
   },
   "files": [
     "dist",
-    "cachelyze-analyze"
+    "cachelyze-analyze",
+    "README.md"
   ],
   "keywords": [
     "ai",
