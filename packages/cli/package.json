@@ -1,6 +1,6 @@
 {
   "name": "@cachelyze/cli",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "CLI for cachelyze — cached codebase analysis for AI agents",
   "homepage": "https://research.actor",
   "repository": {

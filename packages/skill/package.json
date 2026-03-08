@@ -1,6 +1,6 @@
 {
   "name": "@cachelyze/skill",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Agent skill for cachelyze — teaches AI agents how to use cachelyze effectively",
   "homepage": "https://research.actor",
   "repository": {

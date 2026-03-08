@@ -1,6 +1,6 @@
 {
   "name": "research.actor",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching.",
   "homepage": "https://research.actor",
   "repository": {
