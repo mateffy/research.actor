@@ -2166,20 +2166,24 @@ async function runMain(cmd, opts = {}) {
   }
 }
 
-// ../core/src/config.ts
+// ../core/dist/index.js
 import { createHash } from "node:crypto";
 import { basename } from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { execFile as execFile2, spawn } from "node:child_process";
+import { promisify as promisify2 } from "node:util";
+import { createHash as createHash2 } from "node:crypto";
+import { mkdir, readFile, writeFile, unlink, rm, readdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 function deriveProjectKey(repoRoot) {
   const name = basename(repoRoot);
   const hash = createHash("sha256").update(repoRoot).digest("hex").slice(0, 8);
   return `${name}-${hash}`;
 }
 
-// ../core/src/git.ts
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-// ../core/src/types.ts
 class CachelyzError extends Error {
   cause;
   constructor(message, cause) {
@@ -2202,8 +2206,6 @@ class GitError extends CachelyzError {
     this.name = "GitError";
   }
 }
-
-// ../core/src/git.ts
 var execFileAsync = promisify(execFile);
 async function git(args, cwd) {
   try {
@@ -2235,10 +2237,6 @@ async function getGitInfo(cwd) {
   ]);
   return { hash, repoRoot, hasWorkingChanges: dirty };
 }
-
-// ../core/src/harness.ts
-import { execFile as execFile2, spawn } from "node:child_process";
-import { promisify as promisify2 } from "node:util";
 var execFileAsync2 = promisify2(execFile2);
 var HARNESS_REGISTRY = [
   {
@@ -2381,8 +2379,6 @@ async function resolveSubprocessRunner(name) {
   const harness = await resolveHarness(name);
   return new SubprocessRunner(harness);
 }
-
-// ../core/src/prompts.ts
 function buildBaseAnalysisPrompt(systemPrompt) {
   const base = `You are performing a one-time codebase analysis that will be cached and reused by future AI agents.
 Your job is to produce a comprehensive, dense developer overview of this codebase.
@@ -2436,8 +2432,6 @@ Output ONLY the updated analysis. No preamble, no closing remarks.`;
 Additional focus for this analysis:
 ${userPrompt}`;
 }
-
-// ../core/src/stores/memory.ts
 function toMapKey(key) {
   return [key.projectKey, key.gitHash, key.systemPromptHash ?? ""].join("::");
 }
@@ -2460,13 +2454,6 @@ class MemoryStore {
     this.entries.clear();
   }
 }
-
-// ../core/src/stores/fs.ts
-import { createHash as createHash2 } from "node:crypto";
-import { mkdir, readFile, writeFile, unlink, rm, readdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 function defaultCacheBaseDir() {
   const xdg = process.env["XDG_CACHE_HOME"];
   if (xdg)
@@ -2521,8 +2508,6 @@ class FsStore {
 function hashSystemPrompt(systemPrompt) {
   return createHash2("sha256").update(systemPrompt).digest("hex").slice(0, 12);
 }
-
-// ../core/src/analyze.ts
 async function analyze(opts = {}) {
   const cwd = opts.cwd ?? process.cwd();
   const store = opts.store ?? new MemoryStore;
@@ -2590,6 +2575,7 @@ async function analyze(opts = {}) {
     runner: runner.name
   };
 }
+
 // src/commands/analyze.ts
 var VALID_HARNESSES = ["opencode", "claude", "codex", "aider", "gemini"];
 function isHarnessName(value) {
@@ -2615,7 +2601,7 @@ function parseDuration(value) {
 }
 var analyzeCommand = defineCommand({
   meta: {
-    name: "cachelyze",
+    name: "research",
     description: "Produce a cached codebase analysis for AI agents. Runs a full analysis on first call, " + "returns cached result on subsequent calls for the same git commit, and always analyzes " + "uncommitted working changes on top."
   },
   args: {
@@ -2726,7 +2712,7 @@ var clearCommand = defineCommand({
   args: {
     "cache-dir": {
       type: "string",
-      description: "Custom cache directory (defaults to ~/.cache/cachelyze)."
+      description: "Custom cache directory (defaults to ~/.cache/research)."
     }
   },
   async run({ args }) {
@@ -2751,15 +2737,466 @@ var clearCommand = defineCommand({
   }
 });
 
+// src/commands/skill.ts
+import { promises as fs } from "fs";
+import * as path from "path";
+var noColor = process.env.NO_COLOR !== undefined || process.env.TERM === "dumb";
+var forceColor = process.env.FORCE_COLOR !== undefined;
+var useColor = forceColor || !noColor && process.stdout.isTTY;
+var c3 = {
+  reset: useColor ? "\x1B[0m" : "",
+  bold: useColor ? "\x1B[1m" : "",
+  dim: useColor ? "\x1B[2m" : "",
+  red: useColor ? "\x1B[31m" : "",
+  green: useColor ? "\x1B[32m" : "",
+  yellow: useColor ? "\x1B[33m" : "",
+  blue: useColor ? "\x1B[34m" : "",
+  magenta: useColor ? "\x1B[35m" : "",
+  cyan: useColor ? "\x1B[36m" : "",
+  gray: useColor ? "\x1B[90m" : ""
+};
+var s2 = {
+  check: "✓",
+  cross: "✗",
+  arrow: "→",
+  bullet: "•",
+  info: "ℹ",
+  star: "★",
+  folder: "▸",
+  file: "◆",
+  minus: "−",
+  plus: "+"
+};
+var VALID_HARNESSES2 = ["opencode", "claude", "codex", "aider", "gemini"];
+var SKILL_NAME = "research.actor";
+var SKILL_FILENAME = "SKILL.md";
+var SKILL_CONTENT = `---
+name: research-analyze
+description: >
+  Use research to get an instant, cached analysis of the current codebase instead of
+  exploring the repository from scratch. Run \`research\` at the start of any session to
+  understand the codebase structure, architecture, and current working changes. Significantly
+  reduces token usage by caching analyses per git commit and only re-analyzing uncommitted diffs.
+license: MIT
+compatibility: Requires research to be installed (npm install -g research). Requires git.
+metadata:
+  author: research.actor
+  version: "0.1"
+allowed-tools: Bash(research:*)
+---
+
+# research — Cached Codebase Analysis
+
+\`research\` is a CLI tool that gives you a cached, structured overview of the current codebase.
+Use it at the start of a session or task instead of manually exploring files and directories.
+
+## When to use this skill
+
+- At the start of any coding session to orient yourself in the codebase
+- When asked to understand the project structure, architecture, or conventions
+- Before making changes to understand what exists and where
+- When working with an unfamiliar codebase
+- When you need to understand the impact of in-progress (uncommitted) changes
+
+**Do not** spin up a sub-agent to explore the codebase if \`research\` is available.
+Prefer \`research\` — it is faster, cheaper, and consistent.
+
+## Basic usage
+
+Run with no arguments for a full codebase analysis:
+
+\`\`\`bash
+research
+\`\`\`
+
+The first call on a new git commit runs a full analysis (takes 30–120 seconds depending on
+codebase size). All subsequent calls on the same commit return the cached result instantly.
+
+If there are uncommitted working changes, \`research\` automatically runs a lightweight
+secondary pass that discovers and incorporates the diff on top of the cached analysis.
+
+## Targeted queries with --prompt
+
+Use \`--prompt\` to ask a specific question about the current state of the codebase.
+This is passed only to the working-changes agent — never cached — and layered on top
+of the cached base analysis:
+
+\`\`\`bash
+research --prompt "what does the authentication flow look like?"
+research --prompt "which modules would be affected by changing the User model?"
+research --prompt "summarize what the in-progress changes are doing"
+\`\`\`
+
+This is the **preferred** way to ask targeted questions. It gives the analysis agent both
+the full cached codebase context and your specific question.
+
+## Customizing the cached analysis with --system-prompt
+
+Use \`--system-prompt\` to change what the *cached* analysis focuses on. Each distinct
+system prompt produces a separate cache entry:
+
+\`\`\`bash
+research --system-prompt "focus on the API layer, data models, and database schema"
+research --system-prompt "focus on the frontend component hierarchy and state management"
+\`\`\`
+
+Use this when you need a cached analysis oriented toward a specific domain of the codebase.
+Unlike \`--prompt\`, this affects the full analysis that gets cached.
+
+## Selecting a harness
+
+\`research\` auto-detects installed coding harnesses. Override with \`--harness\`:
+
+\`\`\`bash
+research --harness claude
+research --harness opencode
+research --harness codex
+\`\`\`
+
+## Other useful flags
+
+\`\`\`bash
+research --model claude-opus-4-5     # specify model for the harness
+research --force                      # bypass cache, re-run full analysis
+research --json                       # output as JSON (for programmatic use)
+research --list-harnesses             # show which harnesses are installed
+\`\`\`
+
+## Understanding the output
+
+The output is a dense, information-rich analysis optimized for LLM consumption. It covers:
+
+- High-level architecture and project purpose
+- Module structure and responsibilities
+- Core abstractions and data models
+- Data and control flows
+- Technology stack and dependencies
+- Entry points and configuration
+- Design patterns and conventions
+
+When working changes are present, the output also describes what has changed and how it
+affects the codebase.
+
+## JSON output format
+
+Use \`--json\` when consuming the output programmatically:
+
+\`\`\`json
+{
+  "analysis": "...",
+  "fromCache": true,
+  "gitHash": "abc123",
+  "projectKey": "my-app-3f2a1b4c",
+  "harness": "claude"
+}
+\`\`\`
+
+\`fromCache: true\` means the base analysis was served from cache. A working-changes pass
+may still have run on top if uncommitted changes were detected.
+
+## Cache location
+
+Caches are stored in \`~/.cache/research/<project-key>/\` — outside the repository,
+so agents will not accidentally read stale or incorrect analysis files.
+
+Each cache file is named \`<git-hash>.json\` (or \`<git-hash>-<system-prompt-hash>.json\`
+when a system prompt is used). Switching git commits automatically picks up the correct
+cached analysis.
+`;
+function parseHarnessList(value) {
+  return value.split(",").map((h2) => h2.trim()).filter((h2) => VALID_HARNESSES2.includes(h2));
+}
+function getInstallTargets(harnesses, isGlobal) {
+  const targets = [];
+  for (const harness of harnesses) {
+    switch (harness) {
+      case "claude":
+        if (isGlobal) {
+          targets.push({
+            harness,
+            paths: [path.join("~", ".claude", "CLAUDE.md")],
+            description: "Global CLAUDE.md"
+          });
+        } else {
+          targets.push({
+            harness,
+            paths: [path.join(".claude", "skills", SKILL_NAME, SKILL_FILENAME)],
+            description: "Project skills directory"
+          });
+        }
+        break;
+      case "opencode":
+        if (isGlobal) {
+          targets.push({
+            harness,
+            paths: [path.join("~", ".config", "opencode", "skills", SKILL_NAME, SKILL_FILENAME)],
+            description: "Global opencode skills"
+          });
+        } else {
+          targets.push({
+            harness,
+            paths: [path.join(".opencode", "skills", SKILL_NAME, SKILL_FILENAME)],
+            description: "Project opencode skills"
+          });
+        }
+        break;
+      case "codex":
+        if (isGlobal) {
+          targets.push({
+            harness,
+            paths: [path.join("~", ".codex", "agents", "skills", SKILL_NAME, SKILL_FILENAME)],
+            description: "Global codex skills"
+          });
+        } else {
+          targets.push({
+            harness,
+            paths: [path.join(".agents", "skills", SKILL_NAME, SKILL_FILENAME)],
+            description: "Project agents skills"
+          });
+        }
+        break;
+      case "aider":
+        if (isGlobal) {
+          targets.push({
+            harness,
+            paths: [path.join("~", ".aider", "conventions", "research.md")],
+            description: "Global aider conventions"
+          });
+        } else {
+          targets.push({
+            harness,
+            paths: [path.join("CONVENTIONS.md")],
+            description: "Project CONVENTIONS.md (append research instructions)"
+          });
+        }
+        break;
+      case "gemini":
+        if (isGlobal) {
+          targets.push({
+            harness,
+            paths: [
+              path.join("~", ".gemini", "skills", SKILL_NAME, SKILL_FILENAME),
+              path.join("~", ".agents", "skills", SKILL_NAME, SKILL_FILENAME)
+            ],
+            description: "Global gemini skills"
+          });
+        } else {
+          targets.push({
+            harness,
+            paths: [
+              path.join(".gemini", "skills", SKILL_NAME, SKILL_FILENAME),
+              path.join(".agents", "skills", SKILL_NAME, SKILL_FILENAME)
+            ],
+            description: "Project gemini skills"
+          });
+        }
+        break;
+    }
+  }
+  return targets;
+}
+async function ensureDir(dirPath) {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (err) {}
+}
+async function expandHome(filepath) {
+  if (filepath.startsWith("~/")) {
+    const home = process.env.HOME || process.env.USERPROFILE || "/";
+    return path.join(home, filepath.slice(2));
+  }
+  return filepath;
+}
+async function installSkill(targetPath, isAppend = false) {
+  try {
+    const expandedPath = await expandHome(targetPath);
+    const dir = path.dirname(expandedPath);
+    await ensureDir(dir);
+    if (isAppend) {
+      let existing = "";
+      try {
+        existing = await fs.readFile(expandedPath, "utf-8");
+      } catch {}
+      if (!existing.includes("research.actor")) {
+        const separator = existing ? `
+
+---
+
+` : "";
+        await fs.writeFile(expandedPath, existing + separator + SKILL_CONTENT);
+        console.log(`  ${c3.green}+${c3.reset} ${targetPath}`);
+      } else {
+        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+      }
+    } else {
+      try {
+        await fs.access(expandedPath);
+        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+        return true;
+      } catch {
+        await fs.writeFile(expandedPath, SKILL_CONTENT);
+        console.log(`  ${c3.green}+${c3.reset} ${targetPath}`);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.error(`  ${c3.red}!${c3.reset} ${targetPath}`);
+    return false;
+  }
+}
+async function uninstallSkill(targetPath, isAppend = false) {
+  try {
+    const expandedPath = await expandHome(targetPath);
+    if (isAppend) {
+      let existing = "";
+      try {
+        existing = await fs.readFile(expandedPath, "utf-8");
+      } catch {
+        return true;
+      }
+      if (existing.includes("research.actor")) {
+        const lines = existing.split(`
+`);
+        const newLines = [];
+        let inResearchSection = false;
+        let researchStartIndex = -1;
+        for (let i2 = 0;i2 < lines.length; i2++) {
+          const line = lines[i2];
+          if (line.includes("---") && researchStartIndex === -1 && existing.substring(0, lines.slice(0, i2 + 1).join(`
+`).length).includes("research.actor")) {
+            researchStartIndex = i2;
+            inResearchSection = true;
+            continue;
+          }
+          if (inResearchSection && line.includes("---") && i2 > researchStartIndex) {
+            inResearchSection = false;
+            continue;
+          }
+          if (!inResearchSection && !line.includes("research.actor")) {
+            newLines.push(line);
+          }
+        }
+        await fs.writeFile(expandedPath, newLines.join(`
+`).trim());
+        console.log(`  ${c3.red}-${c3.reset} ${targetPath}`);
+      } else {
+        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+      }
+    } else {
+      try {
+        await fs.access(expandedPath);
+        await fs.unlink(expandedPath);
+        console.log(`  ${c3.red}-${c3.reset} ${targetPath}`);
+      } catch {
+        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.error(`  ${c3.red}!${c3.reset} ${targetPath}`);
+    return false;
+  }
+}
+var skillCommand = defineCommand({
+  meta: {
+    name: "skill",
+    description: "Print, install, or uninstall the research.agent skill. " + "By default, prints the SKILL.md content to stdout. " + "Use --install to write the skill to AI agent directories, or --uninstall to remove it."
+  },
+  args: {
+    install: {
+      type: "boolean",
+      description: "Install the skill to AI agent directories instead of printing to stdout.",
+      alias: "i",
+      default: false
+    },
+    uninstall: {
+      type: "boolean",
+      description: "Remove the skill from AI agent directories.",
+      alias: "u",
+      default: false
+    },
+    harness: {
+      type: "string",
+      description: `Comma-separated list of harnesses to install for. One or more of: ${VALID_HARNESSES2.join(", ")}. ` + "Auto-detects installed harnesses if omitted (local install only). Required when using --global.",
+      alias: "H"
+    },
+    global: {
+      type: "boolean",
+      description: "Install/uninstall globally (system-wide) instead of in the current repository. " + "Requires --harness to be specified explicitly when used with --install or --uninstall.",
+      alias: "g",
+      default: false
+    }
+  },
+  async run({ args }) {
+    const isInstall = args.install === true;
+    const isUninstall = args.uninstall === true;
+    const isGlobal = args.global === true;
+    if (isInstall && isUninstall) {
+      console.error(`${c3.red}Error:${c3.reset} Cannot use both --install and --uninstall.`);
+      process.exit(1);
+    }
+    if (!isInstall && !isUninstall) {
+      console.log(SKILL_CONTENT);
+      return;
+    }
+    let harnesses = [];
+    if (args.harness !== undefined) {
+      harnesses = parseHarnessList(args.harness);
+      if (harnesses.length === 0) {
+        console.error(`${c3.red}Error: Invalid harness(es) "${args.harness}"${c3.reset}`);
+        console.error(`Must be: ${VALID_HARNESSES2.join(", ")}`);
+        process.exit(1);
+      }
+    } else if (isGlobal) {
+      console.error(`${c3.red}Error: --global requires --harness${c3.reset}`);
+      console.error(`Example: research skill --global --harness claude --install`);
+      process.exit(1);
+    }
+    if (!isGlobal && harnesses.length === 0) {
+      const detected = await detectHarnesses();
+      if (detected.length === 0) {
+        console.error(`${c3.red}No harnesses detected.${c3.reset}`);
+        console.error(`Install: ${VALID_HARNESSES2.join(", ")}`);
+        process.exit(1);
+      }
+      harnesses = detected.map((h2) => h2.name);
+    }
+    const action = isUninstall ? "Uninstalling" : "Installing";
+    const symbol = isUninstall ? c3.red + "-" + c3.reset : c3.green + "+" + c3.reset;
+    console.log(`${symbol} ${action} research.actor ${isGlobal ? "(global)" : ""}`);
+    console.log();
+    const targets = getInstallTargets(harnesses, isGlobal);
+    let successCount = 0;
+    let totalCount = 0;
+    for (const target of targets) {
+      for (const targetPath of target.paths) {
+        totalCount++;
+        const isAppend = target.harness === "aider" && !isGlobal;
+        const success = isUninstall ? await uninstallSkill(targetPath, isAppend) : await installSkill(targetPath, isAppend);
+        if (success)
+          successCount++;
+      }
+    }
+    console.log();
+    if (successCount === totalCount) {
+      console.log(`${c3.green}${s2.check}${c3.reset} Done`);
+    } else {
+      console.log(`${c3.yellow}${successCount}/${totalCount} completed${c3.reset}`);
+      process.exit(1);
+    }
+  }
+});
+
 // src/index.ts
 var main = defineCommand({
   meta: {
-    name: "cachelyze",
-    description: "Cached codebase analysis for AI agents. " + "Run `cachelyze analyze` to analyze the current repo."
+    name: "research",
+    description: "Cached codebase analysis for AI agents. " + "Run `research analyze` to analyze the current repo, " + "or `research skill` to install the agent skill."
   },
   subCommands: {
     analyze: analyzeCommand,
-    clear: clearCommand
+    clear: clearCommand,
+    skill: skillCommand
   }
 });
 runMain(main);

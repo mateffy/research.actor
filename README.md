@@ -51,6 +51,29 @@ $ research
 research --prompt "explain the auth flow" --harness opencode
 ```
 
+<br />
+
+**Install the skill to teach your AI agents about research:**
+
+```bash
+# Print the skill content (default)
+research skill
+
+# Install to detected agents in current repo
+research skill --install
+
+# Install for specific agents (comma-separated)
+research skill --install --harness claude,opencode
+
+# Install globally (requires explicit --harness)
+research skill --install --global --harness claude
+
+# Uninstall/remove the skill
+research skill --uninstall
+```
+
+Works with Claude, OpenCode, Codex, Aider, and Gemini — the skill teaches agents when and how to use research effectively.
+
 ---
 
 ## Contents
@@ -59,6 +82,7 @@ research --prompt "explain the auth flow" --harness opencode
 - [Installation](#installation)
 - [How it works](#how-it-works)
 - [CLI usage](#cli-usage)
+  - [`research skill` subcommand](#research-skill--install-the-agent-skill)
 - [SDK usage](#sdk-usage)
   - [Basic](#basic)
   - [Persistent cache with FsStore](#persistent-cache-with-fsstore)
@@ -216,6 +240,46 @@ research clear
 
 The CLI stores cache files in `~/.cache/research/<project-key>/` — outside the repository,
 so agents do not accidentally read them. The `XDG_CACHE_HOME` environment variable is respected.
+
+### `research skill` — Manage the agent skill
+
+Print, install, or uninstall the research skill to teach your AI agents how to use research effectively:
+
+```bash
+# Print the SKILL.md content (default)
+research skill
+
+# Pipe to a file
+research skill > my-skill.md
+
+# Install to detected agents in current repo
+research skill --install
+
+# Install for specific agents (comma-separated)
+research skill --install --harness claude,opencode,codex
+
+# Install globally (system-wide) — requires explicit --harness
+research skill --install --global --harness claude
+
+# Uninstall/remove the skill
+research skill --uninstall
+
+# Uninstall from specific agents
+research skill --uninstall --harness claude,opencode
+
+# Uninstall globally
+research skill --uninstall --global --harness claude
+```
+
+**Where skills are installed:**
+
+| Harness | Local (project) | Global (system) |
+|---|---|---|
+| Claude Code | `.claude/skills/research.actor/SKILL.md` | `~/.claude/CLAUDE.md` |
+| OpenCode | `.opencode/skills/research.actor/SKILL.md` | `~/.config/opencode/skills/research.actor/SKILL.md` |
+| Codex | `.agents/skills/research.actor/SKILL.md` | `~/.codex/agents/skills/research.actor/SKILL.md` |
+| Aider | Appends to `CONVENTIONS.md` | `~/.aider/conventions/research.md` |
+| Gemini | `.gemini/skills/research.actor/SKILL.md` | `~/.gemini/skills/research.actor/SKILL.md` |
 
 ---
 
@@ -572,7 +636,27 @@ interface CacheKey {
 
 A "skill" is a teaching resource for AI agents. When an AI agent has access to this skill, it can more effectively use research to analyze codebases.
 
-### Installation
+### View the skill
+
+Print the skill content to see what's included:
+
+```bash
+research skill
+```
+
+### Install the skill
+
+The easiest way to install is via the CLI:
+
+```bash
+research skill --install
+```
+
+This auto-detects your installed agents and installs the skill locally in the current repository.
+
+### Manual Installation
+
+If you prefer, you can also install the skill package via npm:
 
 ```bash
 npm install @research-agent/skill
@@ -589,7 +673,7 @@ bun add @research-agent/skill
 
 ### For AI Agents
 
-Once this package is installed, AI agents can reference the skill:
+Once the skill is installed, AI agents can reference it:
 
 ```
 Use the research skill to analyze this codebase.
