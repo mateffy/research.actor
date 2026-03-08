@@ -196,7 +196,7 @@ The simplest case. Uses a fresh `MemoryStore` (no disk I/O) and auto-detects the
 available harness.
 
 ```ts
-import { analyze } from "research"
+import { analyze } from "research.actor"
 
 const result = await analyze()
 
@@ -220,7 +220,7 @@ The `MemoryStore` default does not survive across process restarts. For persiste
 — the same behaviour as the CLI — pass an `FsStore`:
 
 ```ts
-import { analyze, FsStore } from "research"
+import { analyze, FsStore } from "research.actor"
 
 const result = await analyze({
   store: new FsStore(),
@@ -253,8 +253,8 @@ await analyze({ store })
 Implement `CacheStore` to persist analyses anywhere — a database, Redis, S3, etc.
 
 ```ts
-import { analyze } from "research"
-import type { CacheStore, CacheKey, AnalysisCache } from "research"
+import { analyze } from "research.actor"
+import type { CacheStore, CacheKey, AnalysisCache } from "research.actor"
 
 class PostgresStore implements CacheStore {
   async get(key: CacheKey): Promise<AnalysisCache | null> {
@@ -289,8 +289,8 @@ By default `research` spawns a subprocess harness. Implement `HarnessRunner` to 
 agent instead — an in-process library, a remote API call, a local model, or a test mock.
 
 ```ts
-import { analyze } from "research"
-import type { HarnessRunner, RunRequest, RunResult } from "research"
+import { analyze } from "research.actor"
+import type { HarnessRunner, RunRequest, RunResult } from "research.actor"
 
 // Example: in-process agent (e.g. pi, or your own)
 class MyAgentRunner implements HarnessRunner {
@@ -331,8 +331,8 @@ const result = await analyze({ runner: new MockRunner() })
 You can also wrap the built-in `SubprocessRunner` to intercept or modify behaviour:
 
 ```ts
-import { SubprocessRunner, resolveHarness } from "research"
-import type { HarnessRunner, RunRequest, RunResult } from "research"
+import { SubprocessRunner, resolveHarness } from "research.actor"
+import type { HarnessRunner, RunRequest, RunResult } from "research.actor"
 
 class LoggingRunner implements HarnessRunner {
   private readonly inner: SubprocessRunner
@@ -361,7 +361,7 @@ await analyze({ runner, store: new FsStore() })
 Pass `maxAge` in milliseconds to treat entries older than that as stale:
 
 ```ts
-import { analyze, FsStore } from "research"
+import { analyze, FsStore } from "research.actor"
 
 // Re-run if cached analysis is older than 24 hours
 await analyze({
@@ -384,7 +384,7 @@ When `maxAge` is omitted, entries never expire (only `force: true` bypasses them
 All research errors extend `CachelyzError`:
 
 ```ts
-import { analyze, FsStore, CachelyzError, HarnessNotFoundError, GitError } from "research"
+import { analyze, FsStore, CachelyzError, HarnessNotFoundError, GitError } from "research.actor"
 
 try {
   await analyze({ store: new FsStore() })
@@ -458,7 +458,7 @@ store.clear() // remove all entries
 Default `HarnessRunner`. Spawns a harness binary as a child process and streams stdout.
 
 ```ts
-import { SubprocessRunner, resolveHarness } from "research"
+import { SubprocessRunner, resolveHarness } from "research.actor"
 
 const harness = await resolveHarness("claude")
 const runner = new SubprocessRunner(harness)
@@ -469,7 +469,7 @@ const runner = new SubprocessRunner(harness)
 Remove all cached entries for a project. Returns the number of files deleted.
 
 ```ts
-import { FsStore, deriveProjectKey, getRepoRoot } from "research"
+import { FsStore, deriveProjectKey, getRepoRoot } from "research.actor"
 
 const repoRoot = await getRepoRoot(process.cwd())
 const projectKey = deriveProjectKey(repoRoot)
