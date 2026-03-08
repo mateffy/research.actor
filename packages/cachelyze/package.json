@@ -2,10 +2,10 @@
   "name": "cachelyze",
   "version": "0.4.0",
   "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching.",
-  "homepage": "https://cachelyze.com",
+  "homepage": "https://research.actor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mateffy/cachelyze.git",
+    "url": "https://github.com/mateffy/research.actor.git",
     "directory": "packages/cachelyze"
   },
   "type": "module",

@@ -2,7 +2,6 @@
  * research.actor
  *
  * Cached codebase analysis for AI coding agents.
- * This is an alias package for cachelyze.
  *
  * @alpha This package is in early development. APIs may change without notice.
  *
@@ -15,7 +14,7 @@
  * ```
  */
 
-// Re-export everything from @cachelyze/core (same as cachelyze package)
+// Re-export everything from @cachelyze/core
 export {
   analyze,
   detectHarnesses,
@@ -56,10 +55,10 @@ export type {
 /**
  * Package metadata.
  */
-export const RESEARCH_ACTOR_VERSION = "0.2.1" as const
+export const RESEARCH_ACTOR_VERSION = "0.4.0" as const
 
 /**
  * Alpha release notice. This package is under active development.
- * Subscribe to https://github.com/mateffy/cachelyze for updates.
+ * Subscribe to https://github.com/mateffy/research.actor for updates.
  */
 export const RELEASE_STATUS = "alpha" as const

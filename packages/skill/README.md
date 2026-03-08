@@ -6,8 +6,8 @@ Agent skill for cachelyze — teaches AI agents how to use cachelyze effectively
 
 This package provides a [Agent Skill](https://agentskills.io) that helps AI coding agents understand and use cachelyze. It includes best practices, usage patterns, and integration guides.
 
-**Website:** [cachelyze.com](https://cachelyze.com)  
-**Repository:** [github.com/mateffy/cachelyze](https://github.com/mateffy/cachelyze)
+**Website:** [research.actor](https://research.actor)  
+**Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
 
 ---
 
@@ -76,7 +76,7 @@ The skill includes:
 
 ## Full Documentation
 
-For complete cachelyze documentation, see the [main README](https://github.com/mateffy/cachelyze#readme).
+For complete documentation, see the [main README](https://github.com/mateffy/research.actor#readme).
 
 ---
 

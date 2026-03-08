@@ -1,11 +1,11 @@
 {
   "name": "research.actor",
   "version": "0.4.0",
-  "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching. (Alias for cachelyze)",
+  "description": "Cached codebase analysis for AI coding agents — stop re-exploring, start caching.",
   "homepage": "https://research.actor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mateffy/cachelyze.git",
+    "url": "https://github.com/mateffy/research.actor.git",
     "directory": "packages/research.actor"
   },
   "type": "module",

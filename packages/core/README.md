@@ -6,8 +6,8 @@ Core SDK for cachelyze — cached codebase analysis for AI coding agents.
 
 This package contains the core business logic and SDK for programmatic use. For the full package with CLI included, see [`cachelyze`](https://www.npmjs.com/package/cachelyze).
 
-**Website:** [cachelyze.com](https://cachelyze.com)  
-**Repository:** [github.com/mateffy/cachelyze](https://github.com/mateffy/cachelyze)
+**Website:** [research.actor](https://research.actor)  
+**Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
 
 ---
 
@@ -197,7 +197,7 @@ try {
 
 ## Full Documentation
 
-For complete documentation including CLI usage, all configuration options, and advanced examples, see the [main README](https://github.com/mateffy/cachelyze#readme).
+For complete documentation including CLI usage, all configuration options, and advanced examples, see the [main README](https://github.com/mateffy/research.actor#readme).
 
 ---
 

@@ -6,8 +6,8 @@ Command-line interface for cachelyze — cached codebase analysis for AI coding 
 
 This package provides the CLI for cachelyze. For programmatic SDK access, use [`@cachelyze/core`](https://www.npmjs.com/package/@cachelyze/core). For the full package with both CLI and SDK, see [`cachelyze`](https://www.npmjs.com/package/cachelyze).
 
-**Website:** [cachelyze.com](https://cachelyze.com)  
-**Repository:** [github.com/mateffy/cachelyze](https://github.com/mateffy/cachelyze)
+**Website:** [research.actor](https://research.actor)  
+**Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
 
 ---
 
@@ -116,7 +116,7 @@ Cache files are stored in `~/.cache/cachelyze/<project-key>/` — outside the re
 
 ## Full Documentation
 
-For SDK usage, programmatic API, and advanced examples, see the [main README](https://github.com/mateffy/cachelyze#readme).
+For SDK usage, programmatic API, and advanced examples, see the [main README](https://github.com/mateffy/research.actor#readme).
 
 ---
 

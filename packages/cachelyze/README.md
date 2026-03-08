@@ -4,8 +4,8 @@
 
 Cached codebase analysis for AI coding agents.
 
-**Website:** [cachelyze.com](https://cachelyze.com)  
-**Repository:** [github.com/mateffy/cachelyze](https://github.com/mateffy/cachelyze)
+**Website:** [research.actor](https://research.actor)  
+**Repository:** [github.com/mateffy/research.actor](https://github.com/mateffy/research.actor)
 
 Every time a new agent session starts, it re-explores your entire codebase to understand it.
 `cachelyze` breaks this bottleneck: it runs a full analysis once per git commit, caches the

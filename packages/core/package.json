@@ -2,10 +2,10 @@
   "name": "@cachelyze/core",
   "version": "0.4.0",
   "description": "Core business logic for cachelyze — cached codebase analysis for AI agents",
-  "homepage": "https://cachelyze.com",
+  "homepage": "https://research.actor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mateffy/cachelyze.git",
+    "url": "https://github.com/mateffy/research.actor.git",
     "directory": "packages/core"
   },
   "type": "module",
