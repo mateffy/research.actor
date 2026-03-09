@@ -1076,9 +1076,9 @@
           <div class="command-line">
             <div class="command-text">
               <span style="color: var(--accent); user-select: none;">$</span>
-              <span>research --harness claude</span>
+              <span>research analyze --harness claude</span>
             </div>
-            <button class="copy-btn" onclick="copyToClipboard(this, 'research --harness claude')">
+            <button class="copy-btn" onclick="copyToClipboard(this, 'research analyze --harness claude')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -1091,9 +1091,9 @@
           <div class="command-line">
             <div class="command-text" style="white-space: pre-wrap;">
               <span style="color: var(--accent); user-select: none;">$</span>
-              <span>research --prompt "explain the auth system"</span>
+              <span>research ask "explain the auth system"</span>
             </div>
-            <button class="copy-btn" onclick="copyToClipboard(this, 'research --prompt &quot;explain the auth system&quot;')">
+            <button class="copy-btn" onclick="copyToClipboard(this, 'research ask &quot;explain the auth system&quot;')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -1428,7 +1428,7 @@
     // Terminal animation
     const EXAMPLES = [
       {
-        command: 'research',
+        command: 'research analyze',
         output: `<div>{</div>
 <div style="padding-left: 20px;">
   <div><span class="json-key">"analysis"</span>: <span>"Bun monorepo with 4 packages. Core SDK exposes analyze(), pluggable CacheStore and HarnessRunner interfaces. Entry: packages/cli/src/index.ts"</span>,</div>
@@ -1438,7 +1438,7 @@
 <div>}</div>`
       },
       {
-        command: 'research --prompt "what auth changes are in progress?"',
+        command: 'research ask "what auth changes are in progress?"',
         output: `<div>{</div>
 <div style="padding-left: 20px;">
   <div><span class="json-key">"analysis"</span>: <span>"JWT middleware refactored in src/auth/middleware.ts. Token expiry now configurable via AUTH_TOKEN_TTL env var."</span>,</div>
@@ -1448,7 +1448,7 @@
 <div>}</div>`
       },
       {
-        command: 'research --harness opencode --max-age 2h',
+        command: 'research analyze --harness opencode --max-age 2h',
         output: `<div>{</div>
 <div style="padding-left: 20px;">
   <div><span class="json-key">"analysis"</span>: <span>"React + TypeScript app. Components in src/components/, state management with Zustand in src/store/. API client in src/lib/api.ts"</span>,</div>

@@ -180,6 +180,7 @@ class SubprocessRunner {
       delete env.OPENCODE_SERVER_USERNAME;
       delete env.OPENCODE_CLIENT;
     }
+    env.RESEARCH_ACTIVE = "true";
     return new Promise((resolve, reject) => {
       const child = spawn(this.harness.binPath, [...args], {
         cwd,

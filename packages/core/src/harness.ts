@@ -158,6 +158,9 @@ export class SubprocessRunner implements HarnessRunner {
       delete env.OPENCODE_SERVER_USERNAME
       delete env.OPENCODE_CLIENT
     }
+    
+    // Set flag to prevent recursive research calls in sub-agents
+    env.RESEARCH_ACTIVE = "true"
 
     return new Promise<RunResult>((resolve, reject) => {
       const child = spawn(this.harness.binPath, [...args], {

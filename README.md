@@ -32,7 +32,7 @@ npm install -g research.actor
 ```bash
 $ cd /path/to/your/codebase
 
-$ research
+$ research analyze
 ```
 
 ```json
@@ -48,7 +48,7 @@ $ research
 </div>
 
 ```bash
-research --prompt "explain the auth flow" --harness opencode
+research ask "explain the auth flow" --harness opencode
 ```
 
 <br />
@@ -82,6 +82,7 @@ Works with Claude, OpenCode, Codex, Aider, and Gemini — the skill teaches agen
 - [Installation](#installation)
 - [How it works](#how-it-works)
 - [CLI usage](#cli-usage)
+  - [`research ask` — Ask specific questions](#research-ask--ask-specific-questions)
   - [`research skill` subcommand](#research-skill--install-the-agent-skill)
 - [SDK usage](#sdk-usage)
   - [Basic](#basic)
@@ -158,7 +159,7 @@ Cache files are stored in `~/.cache/research/<project-key>/` — outside your re
 
 **Phase 1 — Base Analysis (cached)**
 
-When you run `research` on a clean git state, it:
+When you run `research analyze` on a clean git state, it:
 1. Checks if a cached analysis exists for the current commit + system prompt
 2. If cache hit: Returns instantly
 3. If cache miss: Invokes your AI harness to explore the codebase, then caches the result
@@ -182,36 +183,58 @@ Switch branches or commits and the correct cache entry loads automatically based
 
 ```bash
 # Basic — auto-detects installed harness, uses persistent cache
-research
+research analyze
 
 # Targeted question about the current working diff (never cached)
-research --prompt "what auth changes are in progress?"
+research analyze --prompt "what auth changes are in progress?"
 
 # Customize the analysis focus — stored as a separate cache entry
-research --system-prompt "focus on the API layer and data models"
+research analyze --system-prompt "focus on the API layer and data models"
 
 # Specify harness and model
-research --harness claude --model claude-opus-4
+research analyze --harness claude --model claude-opus-4
 
 # Force a fresh analysis even if a cache entry exists
-research --force
+research analyze --force
 
 # Only use cached entry if younger than a given duration
-research --max-age 2h
-research --max-age 30m
-research --max-age 7d
+research analyze --max-age 2h
+research analyze --max-age 30m
+research analyze --max-age 7d
 
 # JSON output — useful when consuming from another script or agent tool
-research --json
+research analyze --json
 
 # List harnesses detected on this system
-research --list-harnesses
+research analyze --list-harnesses
 
 # Remove all cached analyses for the current repository
 research clear
 ```
 
-`research analyze [flags]` is an explicit alias for the default bare invocation.
+`research analyze [flags]` is the explicit command for running analysis.
+
+### `research ask` — Ask specific questions
+
+Ask a targeted question about the codebase. Uses cached analysis as context if available, otherwise the agent will analyze on-demand:
+
+```bash
+# Ask a question about the codebase
+research ask "explain the authentication flow"
+
+# Ask with specific harness
+research ask "which files handle user sessions?" --harness claude
+
+# JSON output for programmatic use
+research ask "what's the database schema?" --json
+```
+
+**Key differences from `research --prompt`:**
+
+- `research ask` focuses on answering your specific question (not generating a general analysis)
+- Uses cached base analysis as context if available
+- Never caches the answer itself
+- Agent is instructed to be concise and answer the question directly
 
 ### Flags
 

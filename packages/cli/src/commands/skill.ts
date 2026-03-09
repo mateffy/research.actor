@@ -46,136 +46,119 @@ const SKILL_FILENAME = "SKILL.md"
 const SKILL_CONTENT = `---
 name: research-analyze
 description: >
-  Use research to get an instant, cached analysis of the current codebase instead of
-  exploring the repository from scratch. Run \`research\` at the start of any session to
-  understand the codebase structure, architecture, and current working changes. Significantly
-  reduces token usage by caching analyses per git commit and only re-analyzing uncommitted diffs.
+  Use research.actor to get codebase context instead of exploring manually or spawning sub-agents.
+  
+  For GENERAL codebase overview: Run \`research analyze\` (cached analysis, returns instantly on subsequent calls).
+  
+  For SPECIFIC QUESTIONS: Run \`research ask "your question"\` (uses cached context if available, 
+  otherwise analyzes on-demand. Focuses on answering your question directly).
+  
+  IMPORTANT: If RESEARCH_ACTIVE environment variable is set, you are already running inside a
+  research subprocess. DO NOT invoke research again — analyze the codebase directly instead.
 license: MIT
 compatibility: Requires research to be installed (npm install -g research). Requires git.
 metadata:
   author: research.actor
   version: "0.1"
+  disable-invocation-when: "process.env.RESEARCH_ACTIVE === 'true'"
 allowed-tools: Bash(research:*)
 ---
 
-# research — Cached Codebase Analysis
+# research.actor — Smart Codebase Context
 
-\`research\` is a CLI tool that gives you a cached, structured overview of the current codebase.
-Use it at the start of a session or task instead of manually exploring files and directories.
+Use research.actor instead of manually exploring or spawning sub-agents to understand the codebase.
 
-## When to use this skill
+## Which command to use?
 
-- At the start of any coding session to orient yourself in the codebase
-- When asked to understand the project structure, architecture, or conventions
-- Before making changes to understand what exists and where
-- When working with an unfamiliar codebase
-- When you need to understand the impact of in-progress (uncommitted) changes
+### Use \`research ask "question"\` for specific questions (RECOMMENDED)
 
-**Do not** spin up a sub-agent to explore the codebase if \`research\` is available.
-Prefer \`research\` — it is faster, cheaper, and consistent.
-
-## Basic usage
-
-Run with no arguments for a full codebase analysis:
+When you need to answer a specific question about the codebase:
 
 \`\`\`bash
-research
+research ask "explain the authentication flow"
+research ask "which files handle user sessions?"
+research ask "what's the database schema for users?"
 \`\`\`
 
-The first call on a new git commit runs a full analysis (takes 30–120 seconds depending on
-codebase size). All subsequent calls on the same commit return the cached result instantly.
+**Benefits:**
+- Uses cached base analysis as context if available (instant)
+- Focuses on answering YOUR question directly
+- More concise than full analysis
+- Never caches the answer itself (fresh responses)
 
-If there are uncommitted working changes, \`research\` automatically runs a lightweight
-secondary pass that discovers and incorporates the diff on top of the cached analysis.
+### Use \`research analyze\` for general codebase overview
 
-## Targeted queries with --prompt
-
-Use \`--prompt\` to ask a specific question about the current state of the codebase.
-This is passed only to the working-changes agent — never cached — and layered on top
-of the cached base analysis:
+When you need a broad understanding of the entire codebase:
 
 \`\`\`bash
-research --prompt "what does the authentication flow look like?"
-research --prompt "which modules would be affected by changing the User model?"
-research --prompt "summarize what the in-progress changes are doing"
+research analyze                          # Full analysis
+research analyze --harness claude         # With specific harness
 \`\`\`
 
-This is the **preferred** way to ask targeted questions. It gives the analysis agent both
-the full cached codebase context and your specific question.
+Use this at the start of a session or when you need comprehensive context.
 
-## Customizing the cached analysis with --system-prompt
+## IMPORTANT: Prevent Recursive Calls
 
-Use \`--system-prompt\` to change what the *cached* analysis focuses on. Each distinct
-system prompt produces a separate cache entry:
+**Check environment before using:** If \`RESEARCH_ACTIVE\` environment variable is set to \`true\`,
+you are currently running as part of a research subprocess. **Do NOT invoke research again** —
+this would create an infinite loop. Instead, analyze the codebase directly using available tools.
+
+## Basic Usage Examples
+
+**Ask a specific question:**
+\`\`\`bash
+research ask "how does the caching work?"
+\`\`\`
+
+**Get full codebase overview:**
+\`\`\`bash
+research analyze
+\`\`\`
+
+**Ask about working changes:**
+\`\`\`bash
+research ask "what did the last commit change?"
+\`\`\`
+
+## How it works
+
+- **First call** on a git commit: Runs full analysis and caches it (30–120 seconds)
+- **Subsequent calls**: Returns cached result instantly
+- **With working changes**: Automatically detects and incorporates uncommitted diffs
+- **Git commit based**: Each commit maintains its own cached analysis
+
+## Flags
 
 \`\`\`bash
-research --system-prompt "focus on the API layer, data models, and database schema"
-research --system-prompt "focus on the frontend component hierarchy and state management"
+research analyze --harness claude    # Specify harness
+research analyze --model gpt-4o      # Specify model
+research analyze --json                # JSON output
+research analyze --force             # Bypass cache
 \`\`\`
 
-Use this when you need a cached analysis oriented toward a specific domain of the codebase.
-Unlike \`--prompt\`, this affects the full analysis that gets cached.
-
-## Selecting a harness
-
-\`research\` auto-detects installed coding harnesses. Override with \`--harness\`:
-
-\`\`\`bash
-research --harness claude
-research --harness opencode
-research --harness codex
-\`\`\`
-
-## Other useful flags
-
-\`\`\`bash
-research --model claude-opus-4-5     # specify model for the harness
-research --force                      # bypass cache, re-run full analysis
-research --json                       # output as JSON (for programmatic use)
-research --list-harnesses             # show which harnesses are installed
-\`\`\`
-
-## Understanding the output
-
-The output is a dense, information-rich analysis optimized for LLM consumption. It covers:
-
-- High-level architecture and project purpose
-- Module structure and responsibilities
-- Core abstractions and data models
-- Data and control flows
-- Technology stack and dependencies
-- Entry points and configuration
-- Design patterns and conventions
-
-When working changes are present, the output also describes what has changed and how it
-affects the codebase.
-
-## JSON output format
-
-Use \`--json\` when consuming the output programmatically:
-
-\`\`\`json
-{
-  "analysis": "...",
-  "fromCache": true,
-  "gitHash": "abc123",
-  "projectKey": "my-app-3f2a1b4c",
-  "harness": "claude"
-}
-\`\`\`
-
-\`fromCache: true\` means the base analysis was served from cache. A working-changes pass
-may still have run on top if uncommitted changes were detected.
-
-## Cache location
-
-Caches are stored in \`~/.cache/research/<project-key>/\` — outside the repository,
-so agents will not accidentally read stale or incorrect analysis files.
-
-Each cache file is named \`<git-hash>.json\` (or \`<git-hash>-<system-prompt-hash>.json\`
-when a system prompt is used). Switching git commits automatically picks up the correct
-cached analysis.
+See \`research --help\` for all commands and options.
 `
+
+// Content to add to AGENTS.md - concise and actionable for AI agents
+const AGENTS_MD_CONTENT = `<research-agent>
+
+Use research.actor instead of spinning up a sub-agent to explore the codebase.
+
+**CRITICAL:** If \`RESEARCH_ACTIVE\` environment variable is set, you are already running inside a research subprocess. DO NOT invoke research again — analyze directly instead.
+
+**When to use:** At the start of any task, or when you need codebase context (structure, patterns, uncommitted changes). Prefer this over manual exploration or sub-agents.
+
+**What it does:** Returns an instant, cached analysis keyed by git commit. First run on a commit does a full analysis (cached), subsequent runs return instantly. Automatically detects and reports uncommitted working changes on top.
+
+**Advantage:** Saves tokens and time. Avoids re-exploring the same codebase repeatedly. You get comprehensive context immediately without file-by-file exploration.
+
+**How to use:**
+- Run analysis: \`research analyze\`
+- Ask a question: \`research ask "your question"\`
+- If you have the skill available: mention "use the research.actor skill"
+- View the full skill: \`research skill\` (outputs the complete SKILL.md)
+
+</research-agent>`
 
 interface InstallTarget {
   harness: HarnessName
@@ -315,7 +298,7 @@ async function installSkill(targetPath: string, isAppend: boolean = false): Prom
       } catch {
         // File doesn't exist
       }
-      
+
       if (!existing.includes("research.actor")) {
         const separator = existing ? "\n\n---\n\n" : ""
         await fs.writeFile(expandedPath, existing + separator + SKILL_CONTENT)
@@ -351,13 +334,13 @@ async function uninstallSkill(targetPath: string, isAppend: boolean = false): Pr
       } catch {
         return true
       }
-      
+
       if (existing.includes("research.actor")) {
         const lines = existing.split("\n")
         const newLines: string[] = []
         let inResearchSection = false
         let researchStartIndex = -1
-        
+
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i]!
           if (line.includes("---") && researchStartIndex === -1 && existing.substring(0, lines.slice(0, i + 1).join("\n").length).includes("research.actor")) {
@@ -373,7 +356,7 @@ async function uninstallSkill(targetPath: string, isAppend: boolean = false): Pr
             newLines.push(line)
           }
         }
-        
+
         await fs.writeFile(expandedPath, newLines.join("\n").trim())
         console.log(`  ${c.red}-${c.reset} ${targetPath}`)
       } else {
@@ -391,6 +374,33 @@ async function uninstallSkill(targetPath: string, isAppend: boolean = false): Pr
     return true
   } catch (err) {
     console.error(`  ${c.red}!${c.reset} ${targetPath}`)
+    return false
+  }
+}
+
+async function updateAgentsMd(): Promise<boolean> {
+  const agentsPath = "AGENTS.md"
+
+  try {
+    let content = ""
+    try {
+      content = await fs.readFile(agentsPath, "utf-8")
+    } catch {
+      // File doesn't exist, will create new
+    }
+
+    // Check if already referenced (look for the research-agent tag)
+    if (content.includes("<research-agent>")) {
+      return true
+    }
+
+    // Add reference
+    const header = content ? "\n\n" : "# Agent Configuration\n\n"
+    await fs.writeFile(agentsPath, content + header + AGENTS_MD_CONTENT)
+    console.log(`  ${c.green}+${c.reset} ${agentsPath}`)
+    return true
+  } catch (err) {
+    console.error(`  ${c.red}!${c.reset} ${agentsPath}`)
     return false
   }
 }
@@ -489,11 +499,16 @@ export const skillCommand = defineCommand({
       for (const targetPath of target.paths) {
         totalCount++
         const isAppend = target.harness === "aider" && !isGlobal
-        const success = isUninstall 
+        const success = isUninstall
           ? await uninstallSkill(targetPath, isAppend)
           : await installSkill(targetPath, isAppend)
         if (success) successCount++
       }
+    }
+
+    // Update AGENTS.md for local installs (only during install, not uninstall)
+    if (!isGlobal && !isUninstall) {
+      await updateAgentsMd()
     }
 
     console.log()

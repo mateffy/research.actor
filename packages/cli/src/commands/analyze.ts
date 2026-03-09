@@ -1,6 +1,7 @@
 import { defineCommand } from "citty"
 import { analyze, detectHarnesses, FsStore } from "@research.actor/core"
 import type { HarnessName } from "@research.actor/core"
+import { loadConfig } from "./config.js"
 
 const VALID_HARNESSES: readonly HarnessName[] = ["opencode", "claude", "codex", "aider", "gemini"]
 
@@ -106,11 +107,26 @@ export const analyzeCommand = defineCommand({
       return
     }
 
-    // Validate --harness
-    const harnessArg = args.harness
-    if (harnessArg !== undefined && !isHarnessName(harnessArg)) {
-      console.error(`Invalid harness: "${harnessArg}". Must be one of: ${VALID_HARNESSES.join(", ")}`)
-      process.exit(1)
+    // Validate --harness or use config default
+    let harnessArg: HarnessName | undefined = undefined
+    let modelArg: string | undefined = args.model
+    
+    if (args.harness !== undefined) {
+      if (!isHarnessName(args.harness)) {
+        console.error(`Invalid harness: "${args.harness}". Must be one of: ${VALID_HARNESSES.join(", ")}`)
+        process.exit(1)
+      }
+      harnessArg = args.harness
+    } else {
+      // If no harness specified, check config for default
+      const config = await loadConfig()
+      if (config.defaultHarness) {
+        harnessArg = config.defaultHarness
+      }
+      // Also check for default model
+      if (modelArg === undefined && config.defaultModel) {
+        modelArg = config.defaultModel
+      }
     }
 
     // Validate --max-age
@@ -134,7 +150,7 @@ export const analyzeCommand = defineCommand({
       force: args.force,
       store: new FsStore(),
       ...(harnessArg !== undefined ? { harness: harnessArg } : {}),
-      ...(args.model !== undefined ? { model: args.model } : {}),
+      ...(modelArg !== undefined ? { model: modelArg } : {}),
       ...(args["system-prompt"] !== undefined ? { systemPrompt: args["system-prompt"] } : {}),
       ...(args.prompt !== undefined ? { prompt: args.prompt } : {}),
       ...(maxAge !== undefined ? { maxAge } : {}),

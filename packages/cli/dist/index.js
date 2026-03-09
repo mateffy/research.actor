@@ -2346,6 +2346,7 @@ class SubprocessRunner {
       delete env2.OPENCODE_SERVER_USERNAME;
       delete env2.OPENCODE_CLIENT;
     }
+    env2.RESEARCH_ACTIVE = "true";
     return new Promise((resolve, reject) => {
       const child = spawn(this.harness.binPath, [...args], {
         cwd,
@@ -2576,10 +2577,162 @@ async function analyze(opts = {}) {
   };
 }
 
-// src/commands/analyze.ts
+// src/commands/config.ts
+import { promises as fs } from "fs";
+import * as path from "path";
 var VALID_HARNESSES = ["opencode", "claude", "codex", "aider", "gemini"];
+var noColor = process.env.NO_COLOR !== undefined || process.env.TERM === "dumb";
+var forceColor = process.env.FORCE_COLOR !== undefined;
+var useColor = forceColor || !noColor && process.stdout.isTTY;
+var c3 = {
+  reset: useColor ? "\x1B[0m" : "",
+  bold: useColor ? "\x1B[1m" : "",
+  dim: useColor ? "\x1B[2m" : "",
+  red: useColor ? "\x1B[31m" : "",
+  green: useColor ? "\x1B[32m" : "",
+  yellow: useColor ? "\x1B[33m" : "",
+  cyan: useColor ? "\x1B[36m" : "",
+  gray: useColor ? "\x1B[90m" : ""
+};
+var s2 = {
+  check: "✓",
+  cross: "✗",
+  bullet: "•"
+};
+function getConfigPath() {
+  const home = process.env.HOME || process.env.USERPROFILE || "/";
+  return path.join(home, ".config", "research", "config.json");
+}
+async function loadConfig() {
+  const configPath = getConfigPath();
+  try {
+    const content = await fs.readFile(configPath, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return {};
+  }
+}
+async function saveConfig(config) {
+  const configPath = getConfigPath();
+  const dir = path.dirname(configPath);
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch {}
+  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+}
+var configCommand = defineCommand({
+  meta: {
+    name: "config",
+    description: "Manage research configuration including default harness and model."
+  },
+  args: {
+    harness: {
+      type: "string",
+      description: `Set default harness. One of: ${VALID_HARNESSES.join(", ")}`,
+      alias: "H"
+    },
+    model: {
+      type: "string",
+      description: "Set default model (e.g., claude-sonnet-4-5, gpt-4o)",
+      alias: "m"
+    },
+    clear: {
+      type: "boolean",
+      description: "Clear all default configuration (harness and model)",
+      alias: "c",
+      default: false
+    },
+    "clear-harness": {
+      type: "boolean",
+      description: "Clear default harness only",
+      default: false
+    },
+    "clear-model": {
+      type: "boolean",
+      description: "Clear default model only",
+      default: false
+    }
+  },
+  async run({ args }) {
+    const config = await loadConfig();
+    let modified = false;
+    if (args.harness !== undefined) {
+      const harness = args.harness;
+      if (!VALID_HARNESSES.includes(harness)) {
+        console.error(`${c3.red}Error: Invalid harness "${harness}"${c3.reset}`);
+        console.error(`Must be one of: ${VALID_HARNESSES.join(", ")}`);
+        process.exit(1);
+      }
+      config.defaultHarness = harness;
+      modified = true;
+      console.log(`${c3.green}${s2.check}${c3.reset} Default harness set to: ${c3.cyan}${harness}${c3.reset}`);
+    }
+    if (args.model !== undefined) {
+      config.defaultModel = args.model;
+      modified = true;
+      console.log(`${c3.green}${s2.check}${c3.reset} Default model set to: ${c3.cyan}${args.model}${c3.reset}`);
+    }
+    if (modified) {
+      await saveConfig(config);
+      return;
+    }
+    if (args.clear) {
+      let cleared = false;
+      if (config.defaultHarness || config.defaultModel) {
+        delete config.defaultHarness;
+        delete config.defaultModel;
+        await saveConfig(config);
+        cleared = true;
+      }
+      console.log(`${cleared ? c3.green + s2.check : c3.gray + s2.bullet}${c3.reset} ${cleared ? "All defaults cleared" : "No defaults configured"}`);
+      return;
+    }
+    if (args["clear-harness"]) {
+      if (config.defaultHarness) {
+        delete config.defaultHarness;
+        await saveConfig(config);
+        console.log(`${c3.green}${s2.check}${c3.reset} Default harness cleared`);
+      } else {
+        console.log(`${c3.gray}${s2.bullet}${c3.reset} No default harness configured`);
+      }
+      return;
+    }
+    if (args["clear-model"]) {
+      if (config.defaultModel) {
+        delete config.defaultModel;
+        await saveConfig(config);
+        console.log(`${c3.green}${s2.check}${c3.reset} Default model cleared`);
+      } else {
+        console.log(`${c3.gray}${s2.bullet}${c3.reset} No default model configured`);
+      }
+      return;
+    }
+    console.log(`${c3.bold}Configuration${c3.reset}`);
+    console.log(``);
+    const configPath = getConfigPath();
+    console.log(`${c3.gray}Config file:${c3.reset} ${configPath}`);
+    console.log(``);
+    if (config.defaultHarness) {
+      console.log(`${c3.gray}Default harness:${c3.reset} ${c3.cyan}${config.defaultHarness}${c3.reset}`);
+    } else {
+      console.log(`${c3.gray}Default harness:${c3.reset} ${c3.dim}(not set - auto-detects)${c3.reset}`);
+    }
+    if (config.defaultModel) {
+      console.log(`${c3.gray}Default model:${c3.reset} ${c3.cyan}${config.defaultModel}${c3.reset}`);
+    } else {
+      console.log(`${c3.gray}Default model:${c3.reset} ${c3.dim}(not set)${c3.reset}`);
+    }
+    console.log(``);
+    console.log(`${c3.gray}Set harness:${c3.reset} research config --harness claude`);
+    console.log(`${c3.gray}Set model:${c3.reset} research config --model claude-sonnet-4-5`);
+    console.log(`${c3.gray}Clear all:${c3.reset} research config --clear`);
+  }
+});
+
+// src/commands/analyze.ts
+var VALID_HARNESSES2 = ["opencode", "claude", "codex", "aider", "gemini"];
 function isHarnessName(value) {
-  return VALID_HARNESSES.includes(value);
+  return VALID_HARNESSES2.includes(value);
 }
 function parseDuration(value) {
   const match = /^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d)?$/.exec(value.trim());
@@ -2607,7 +2760,7 @@ var analyzeCommand = defineCommand({
   args: {
     harness: {
       type: "string",
-      description: `Harness to use for analysis. One of: ${VALID_HARNESSES.join(", ")}. Auto-detected if omitted.`,
+      description: `Harness to use for analysis. One of: ${VALID_HARNESSES2.join(", ")}. Auto-detected if omitted.`,
       alias: "H"
     },
     model: {
@@ -2654,7 +2807,7 @@ var analyzeCommand = defineCommand({
       const available = await detectHarnesses();
       if (available.length === 0) {
         console.error("No supported harnesses found in PATH.");
-        console.error(`Install one of: ${VALID_HARNESSES.join(", ")}`);
+        console.error(`Install one of: ${VALID_HARNESSES2.join(", ")}`);
         process.exit(1);
       }
       for (const h2 of available) {
@@ -2662,10 +2815,22 @@ var analyzeCommand = defineCommand({
       }
       return;
     }
-    const harnessArg = args.harness;
-    if (harnessArg !== undefined && !isHarnessName(harnessArg)) {
-      console.error(`Invalid harness: "${harnessArg}". Must be one of: ${VALID_HARNESSES.join(", ")}`);
-      process.exit(1);
+    let harnessArg = undefined;
+    let modelArg = args.model;
+    if (args.harness !== undefined) {
+      if (!isHarnessName(args.harness)) {
+        console.error(`Invalid harness: "${args.harness}". Must be one of: ${VALID_HARNESSES2.join(", ")}`);
+        process.exit(1);
+      }
+      harnessArg = args.harness;
+    } else {
+      const config = await loadConfig();
+      if (config.defaultHarness) {
+        harnessArg = config.defaultHarness;
+      }
+      if (modelArg === undefined && config.defaultModel) {
+        modelArg = config.defaultModel;
+      }
     }
     let maxAge;
     if (args["max-age"] !== undefined) {
@@ -2682,7 +2847,7 @@ var analyzeCommand = defineCommand({
       force: args.force,
       store: new FsStore,
       ...harnessArg !== undefined ? { harness: harnessArg } : {},
-      ...args.model !== undefined ? { model: args.model } : {},
+      ...modelArg !== undefined ? { model: modelArg } : {},
       ...args["system-prompt"] !== undefined ? { systemPrompt: args["system-prompt"] } : {},
       ...args.prompt !== undefined ? { prompt: args.prompt } : {},
       ...maxAge !== undefined ? { maxAge } : {},
@@ -2738,24 +2903,24 @@ var clearCommand = defineCommand({
 });
 
 // src/commands/skill.ts
-import { promises as fs } from "fs";
-import * as path from "path";
-var noColor = process.env.NO_COLOR !== undefined || process.env.TERM === "dumb";
-var forceColor = process.env.FORCE_COLOR !== undefined;
-var useColor = forceColor || !noColor && process.stdout.isTTY;
-var c3 = {
-  reset: useColor ? "\x1B[0m" : "",
-  bold: useColor ? "\x1B[1m" : "",
-  dim: useColor ? "\x1B[2m" : "",
-  red: useColor ? "\x1B[31m" : "",
-  green: useColor ? "\x1B[32m" : "",
-  yellow: useColor ? "\x1B[33m" : "",
-  blue: useColor ? "\x1B[34m" : "",
-  magenta: useColor ? "\x1B[35m" : "",
-  cyan: useColor ? "\x1B[36m" : "",
-  gray: useColor ? "\x1B[90m" : ""
+import { promises as fs2 } from "fs";
+import * as path2 from "path";
+var noColor2 = process.env.NO_COLOR !== undefined || process.env.TERM === "dumb";
+var forceColor2 = process.env.FORCE_COLOR !== undefined;
+var useColor2 = forceColor2 || !noColor2 && process.stdout.isTTY;
+var c4 = {
+  reset: useColor2 ? "\x1B[0m" : "",
+  bold: useColor2 ? "\x1B[1m" : "",
+  dim: useColor2 ? "\x1B[2m" : "",
+  red: useColor2 ? "\x1B[31m" : "",
+  green: useColor2 ? "\x1B[32m" : "",
+  yellow: useColor2 ? "\x1B[33m" : "",
+  blue: useColor2 ? "\x1B[34m" : "",
+  magenta: useColor2 ? "\x1B[35m" : "",
+  cyan: useColor2 ? "\x1B[36m" : "",
+  gray: useColor2 ? "\x1B[90m" : ""
 };
-var s2 = {
+var s3 = {
   check: "✓",
   cross: "✗",
   arrow: "→",
@@ -2767,144 +2932,125 @@ var s2 = {
   minus: "−",
   plus: "+"
 };
-var VALID_HARNESSES2 = ["opencode", "claude", "codex", "aider", "gemini"];
+var VALID_HARNESSES3 = ["opencode", "claude", "codex", "aider", "gemini"];
 var SKILL_NAME = "research.actor";
 var SKILL_FILENAME = "SKILL.md";
 var SKILL_CONTENT = `---
 name: research-analyze
 description: >
-  Use research to get an instant, cached analysis of the current codebase instead of
-  exploring the repository from scratch. Run \`research\` at the start of any session to
-  understand the codebase structure, architecture, and current working changes. Significantly
-  reduces token usage by caching analyses per git commit and only re-analyzing uncommitted diffs.
+  Use research.actor to get codebase context instead of exploring manually or spawning sub-agents.
+  
+  For GENERAL codebase overview: Run \`research analyze\` (cached analysis, returns instantly on subsequent calls).
+  
+  For SPECIFIC QUESTIONS: Run \`research ask "your question"\` (uses cached context if available, 
+  otherwise analyzes on-demand. Focuses on answering your question directly).
+  
+  IMPORTANT: If RESEARCH_ACTIVE environment variable is set, you are already running inside a
+  research subprocess. DO NOT invoke research again — analyze the codebase directly instead.
 license: MIT
 compatibility: Requires research to be installed (npm install -g research). Requires git.
 metadata:
   author: research.actor
   version: "0.1"
+  disable-invocation-when: "process.env.RESEARCH_ACTIVE === 'true'"
 allowed-tools: Bash(research:*)
 ---
 
-# research — Cached Codebase Analysis
+# research.actor — Smart Codebase Context
 
-\`research\` is a CLI tool that gives you a cached, structured overview of the current codebase.
-Use it at the start of a session or task instead of manually exploring files and directories.
+Use research.actor instead of manually exploring or spawning sub-agents to understand the codebase.
 
-## When to use this skill
+## Which command to use?
 
-- At the start of any coding session to orient yourself in the codebase
-- When asked to understand the project structure, architecture, or conventions
-- Before making changes to understand what exists and where
-- When working with an unfamiliar codebase
-- When you need to understand the impact of in-progress (uncommitted) changes
+### Use \`research ask "question"\` for specific questions (RECOMMENDED)
 
-**Do not** spin up a sub-agent to explore the codebase if \`research\` is available.
-Prefer \`research\` — it is faster, cheaper, and consistent.
-
-## Basic usage
-
-Run with no arguments for a full codebase analysis:
+When you need to answer a specific question about the codebase:
 
 \`\`\`bash
-research
+research ask "explain the authentication flow"
+research ask "which files handle user sessions?"
+research ask "what's the database schema for users?"
 \`\`\`
 
-The first call on a new git commit runs a full analysis (takes 30–120 seconds depending on
-codebase size). All subsequent calls on the same commit return the cached result instantly.
+**Benefits:**
+- Uses cached base analysis as context if available (instant)
+- Focuses on answering YOUR question directly
+- More concise than full analysis
+- Never caches the answer itself (fresh responses)
 
-If there are uncommitted working changes, \`research\` automatically runs a lightweight
-secondary pass that discovers and incorporates the diff on top of the cached analysis.
+### Use \`research analyze\` for general codebase overview
 
-## Targeted queries with --prompt
-
-Use \`--prompt\` to ask a specific question about the current state of the codebase.
-This is passed only to the working-changes agent — never cached — and layered on top
-of the cached base analysis:
+When you need a broad understanding of the entire codebase:
 
 \`\`\`bash
-research --prompt "what does the authentication flow look like?"
-research --prompt "which modules would be affected by changing the User model?"
-research --prompt "summarize what the in-progress changes are doing"
+research analyze                          # Full analysis
+research analyze --harness claude         # With specific harness
 \`\`\`
 
-This is the **preferred** way to ask targeted questions. It gives the analysis agent both
-the full cached codebase context and your specific question.
+Use this at the start of a session or when you need comprehensive context.
 
-## Customizing the cached analysis with --system-prompt
+## IMPORTANT: Prevent Recursive Calls
 
-Use \`--system-prompt\` to change what the *cached* analysis focuses on. Each distinct
-system prompt produces a separate cache entry:
+**Check environment before using:** If \`RESEARCH_ACTIVE\` environment variable is set to \`true\`,
+you are currently running as part of a research subprocess. **Do NOT invoke research again** —
+this would create an infinite loop. Instead, analyze the codebase directly using available tools.
+
+## Basic Usage Examples
+
+**Ask a specific question:**
+\`\`\`bash
+research ask "how does the caching work?"
+\`\`\`
+
+**Get full codebase overview:**
+\`\`\`bash
+research analyze
+\`\`\`
+
+**Ask about working changes:**
+\`\`\`bash
+research ask "what did the last commit change?"
+\`\`\`
+
+## How it works
+
+- **First call** on a git commit: Runs full analysis and caches it (30–120 seconds)
+- **Subsequent calls**: Returns cached result instantly
+- **With working changes**: Automatically detects and incorporates uncommitted diffs
+- **Git commit based**: Each commit maintains its own cached analysis
+
+## Flags
 
 \`\`\`bash
-research --system-prompt "focus on the API layer, data models, and database schema"
-research --system-prompt "focus on the frontend component hierarchy and state management"
+research analyze --harness claude    # Specify harness
+research analyze --model gpt-4o      # Specify model
+research analyze --json                # JSON output
+research analyze --force             # Bypass cache
 \`\`\`
 
-Use this when you need a cached analysis oriented toward a specific domain of the codebase.
-Unlike \`--prompt\`, this affects the full analysis that gets cached.
-
-## Selecting a harness
-
-\`research\` auto-detects installed coding harnesses. Override with \`--harness\`:
-
-\`\`\`bash
-research --harness claude
-research --harness opencode
-research --harness codex
-\`\`\`
-
-## Other useful flags
-
-\`\`\`bash
-research --model claude-opus-4-5     # specify model for the harness
-research --force                      # bypass cache, re-run full analysis
-research --json                       # output as JSON (for programmatic use)
-research --list-harnesses             # show which harnesses are installed
-\`\`\`
-
-## Understanding the output
-
-The output is a dense, information-rich analysis optimized for LLM consumption. It covers:
-
-- High-level architecture and project purpose
-- Module structure and responsibilities
-- Core abstractions and data models
-- Data and control flows
-- Technology stack and dependencies
-- Entry points and configuration
-- Design patterns and conventions
-
-When working changes are present, the output also describes what has changed and how it
-affects the codebase.
-
-## JSON output format
-
-Use \`--json\` when consuming the output programmatically:
-
-\`\`\`json
-{
-  "analysis": "...",
-  "fromCache": true,
-  "gitHash": "abc123",
-  "projectKey": "my-app-3f2a1b4c",
-  "harness": "claude"
-}
-\`\`\`
-
-\`fromCache: true\` means the base analysis was served from cache. A working-changes pass
-may still have run on top if uncommitted changes were detected.
-
-## Cache location
-
-Caches are stored in \`~/.cache/research/<project-key>/\` — outside the repository,
-so agents will not accidentally read stale or incorrect analysis files.
-
-Each cache file is named \`<git-hash>.json\` (or \`<git-hash>-<system-prompt-hash>.json\`
-when a system prompt is used). Switching git commits automatically picks up the correct
-cached analysis.
+See \`research --help\` for all commands and options.
 `;
+var AGENTS_MD_CONTENT = `<research-agent>
+
+Use research.actor instead of spinning up a sub-agent to explore the codebase.
+
+**CRITICAL:** If \`RESEARCH_ACTIVE\` environment variable is set, you are already running inside a research subprocess. DO NOT invoke research again — analyze directly instead.
+
+**When to use:** At the start of any task, or when you need codebase context (structure, patterns, uncommitted changes). Prefer this over manual exploration or sub-agents.
+
+**What it does:** Returns an instant, cached analysis keyed by git commit. First run on a commit does a full analysis (cached), subsequent runs return instantly. Automatically detects and reports uncommitted working changes on top.
+
+**Advantage:** Saves tokens and time. Avoids re-exploring the same codebase repeatedly. You get comprehensive context immediately without file-by-file exploration.
+
+**How to use:**
+- Run analysis: \`research analyze\`
+- Ask a question: \`research ask "your question"\`
+- If you have the skill available: mention "use the research.actor skill"
+- View the full skill: \`research skill\` (outputs the complete SKILL.md)
+
+</research-agent>`;
 function parseHarnessList(value) {
-  return value.split(",").map((h2) => h2.trim()).filter((h2) => VALID_HARNESSES2.includes(h2));
+  return value.split(",").map((h2) => h2.trim()).filter((h2) => VALID_HARNESSES3.includes(h2));
 }
 function getInstallTargets(harnesses, isGlobal) {
   const targets = [];
@@ -2914,13 +3060,13 @@ function getInstallTargets(harnesses, isGlobal) {
         if (isGlobal) {
           targets.push({
             harness,
-            paths: [path.join("~", ".claude", "CLAUDE.md")],
+            paths: [path2.join("~", ".claude", "CLAUDE.md")],
             description: "Global CLAUDE.md"
           });
         } else {
           targets.push({
             harness,
-            paths: [path.join(".claude", "skills", SKILL_NAME, SKILL_FILENAME)],
+            paths: [path2.join(".claude", "skills", SKILL_NAME, SKILL_FILENAME)],
             description: "Project skills directory"
           });
         }
@@ -2929,13 +3075,13 @@ function getInstallTargets(harnesses, isGlobal) {
         if (isGlobal) {
           targets.push({
             harness,
-            paths: [path.join("~", ".config", "opencode", "skills", SKILL_NAME, SKILL_FILENAME)],
+            paths: [path2.join("~", ".config", "opencode", "skills", SKILL_NAME, SKILL_FILENAME)],
             description: "Global opencode skills"
           });
         } else {
           targets.push({
             harness,
-            paths: [path.join(".opencode", "skills", SKILL_NAME, SKILL_FILENAME)],
+            paths: [path2.join(".opencode", "skills", SKILL_NAME, SKILL_FILENAME)],
             description: "Project opencode skills"
           });
         }
@@ -2944,13 +3090,13 @@ function getInstallTargets(harnesses, isGlobal) {
         if (isGlobal) {
           targets.push({
             harness,
-            paths: [path.join("~", ".codex", "agents", "skills", SKILL_NAME, SKILL_FILENAME)],
+            paths: [path2.join("~", ".codex", "agents", "skills", SKILL_NAME, SKILL_FILENAME)],
             description: "Global codex skills"
           });
         } else {
           targets.push({
             harness,
-            paths: [path.join(".agents", "skills", SKILL_NAME, SKILL_FILENAME)],
+            paths: [path2.join(".agents", "skills", SKILL_NAME, SKILL_FILENAME)],
             description: "Project agents skills"
           });
         }
@@ -2959,13 +3105,13 @@ function getInstallTargets(harnesses, isGlobal) {
         if (isGlobal) {
           targets.push({
             harness,
-            paths: [path.join("~", ".aider", "conventions", "research.md")],
+            paths: [path2.join("~", ".aider", "conventions", "research.md")],
             description: "Global aider conventions"
           });
         } else {
           targets.push({
             harness,
-            paths: [path.join("CONVENTIONS.md")],
+            paths: [path2.join("CONVENTIONS.md")],
             description: "Project CONVENTIONS.md (append research instructions)"
           });
         }
@@ -2975,8 +3121,8 @@ function getInstallTargets(harnesses, isGlobal) {
           targets.push({
             harness,
             paths: [
-              path.join("~", ".gemini", "skills", SKILL_NAME, SKILL_FILENAME),
-              path.join("~", ".agents", "skills", SKILL_NAME, SKILL_FILENAME)
+              path2.join("~", ".gemini", "skills", SKILL_NAME, SKILL_FILENAME),
+              path2.join("~", ".agents", "skills", SKILL_NAME, SKILL_FILENAME)
             ],
             description: "Global gemini skills"
           });
@@ -2984,8 +3130,8 @@ function getInstallTargets(harnesses, isGlobal) {
           targets.push({
             harness,
             paths: [
-              path.join(".gemini", "skills", SKILL_NAME, SKILL_FILENAME),
-              path.join(".agents", "skills", SKILL_NAME, SKILL_FILENAME)
+              path2.join(".gemini", "skills", SKILL_NAME, SKILL_FILENAME),
+              path2.join(".agents", "skills", SKILL_NAME, SKILL_FILENAME)
             ],
             description: "Project gemini skills"
           });
@@ -2997,25 +3143,25 @@ function getInstallTargets(harnesses, isGlobal) {
 }
 async function ensureDir(dirPath) {
   try {
-    await fs.mkdir(dirPath, { recursive: true });
+    await fs2.mkdir(dirPath, { recursive: true });
   } catch (err) {}
 }
 async function expandHome(filepath) {
   if (filepath.startsWith("~/")) {
     const home = process.env.HOME || process.env.USERPROFILE || "/";
-    return path.join(home, filepath.slice(2));
+    return path2.join(home, filepath.slice(2));
   }
   return filepath;
 }
 async function installSkill(targetPath, isAppend = false) {
   try {
     const expandedPath = await expandHome(targetPath);
-    const dir = path.dirname(expandedPath);
+    const dir = path2.dirname(expandedPath);
     await ensureDir(dir);
     if (isAppend) {
       let existing = "";
       try {
-        existing = await fs.readFile(expandedPath, "utf-8");
+        existing = await fs2.readFile(expandedPath, "utf-8");
       } catch {}
       if (!existing.includes("research.actor")) {
         const separator = existing ? `
@@ -3023,24 +3169,24 @@ async function installSkill(targetPath, isAppend = false) {
 ---
 
 ` : "";
-        await fs.writeFile(expandedPath, existing + separator + SKILL_CONTENT);
-        console.log(`  ${c3.green}+${c3.reset} ${targetPath}`);
+        await fs2.writeFile(expandedPath, existing + separator + SKILL_CONTENT);
+        console.log(`  ${c4.green}+${c4.reset} ${targetPath}`);
       } else {
-        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+        console.log(`  ${c4.dim}=${c4.reset} ${targetPath}`);
       }
     } else {
       try {
-        await fs.access(expandedPath);
-        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+        await fs2.access(expandedPath);
+        console.log(`  ${c4.dim}=${c4.reset} ${targetPath}`);
         return true;
       } catch {
-        await fs.writeFile(expandedPath, SKILL_CONTENT);
-        console.log(`  ${c3.green}+${c3.reset} ${targetPath}`);
+        await fs2.writeFile(expandedPath, SKILL_CONTENT);
+        console.log(`  ${c4.green}+${c4.reset} ${targetPath}`);
       }
     }
     return true;
   } catch (err) {
-    console.error(`  ${c3.red}!${c3.reset} ${targetPath}`);
+    console.error(`  ${c4.red}!${c4.reset} ${targetPath}`);
     return false;
   }
 }
@@ -3050,7 +3196,7 @@ async function uninstallSkill(targetPath, isAppend = false) {
     if (isAppend) {
       let existing = "";
       try {
-        existing = await fs.readFile(expandedPath, "utf-8");
+        existing = await fs2.readFile(expandedPath, "utf-8");
       } catch {
         return true;
       }
@@ -3076,24 +3222,47 @@ async function uninstallSkill(targetPath, isAppend = false) {
             newLines.push(line);
           }
         }
-        await fs.writeFile(expandedPath, newLines.join(`
+        await fs2.writeFile(expandedPath, newLines.join(`
 `).trim());
-        console.log(`  ${c3.red}-${c3.reset} ${targetPath}`);
+        console.log(`  ${c4.red}-${c4.reset} ${targetPath}`);
       } else {
-        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+        console.log(`  ${c4.dim}=${c4.reset} ${targetPath}`);
       }
     } else {
       try {
-        await fs.access(expandedPath);
-        await fs.unlink(expandedPath);
-        console.log(`  ${c3.red}-${c3.reset} ${targetPath}`);
+        await fs2.access(expandedPath);
+        await fs2.unlink(expandedPath);
+        console.log(`  ${c4.red}-${c4.reset} ${targetPath}`);
       } catch {
-        console.log(`  ${c3.dim}=${c3.reset} ${targetPath}`);
+        console.log(`  ${c4.dim}=${c4.reset} ${targetPath}`);
       }
     }
     return true;
   } catch (err) {
-    console.error(`  ${c3.red}!${c3.reset} ${targetPath}`);
+    console.error(`  ${c4.red}!${c4.reset} ${targetPath}`);
+    return false;
+  }
+}
+async function updateAgentsMd() {
+  const agentsPath = "AGENTS.md";
+  try {
+    let content = "";
+    try {
+      content = await fs2.readFile(agentsPath, "utf-8");
+    } catch {}
+    if (content.includes("<research-agent>")) {
+      return true;
+    }
+    const header = content ? `
+
+` : `# Agent Configuration
+
+`;
+    await fs2.writeFile(agentsPath, content + header + AGENTS_MD_CONTENT);
+    console.log(`  ${c4.green}+${c4.reset} ${agentsPath}`);
+    return true;
+  } catch (err) {
+    console.error(`  ${c4.red}!${c4.reset} ${agentsPath}`);
     return false;
   }
 }
@@ -3117,7 +3286,7 @@ var skillCommand = defineCommand({
     },
     harness: {
       type: "string",
-      description: `Comma-separated list of harnesses to install for. One or more of: ${VALID_HARNESSES2.join(", ")}. ` + "Auto-detects installed harnesses if omitted (local install only). Required when using --global.",
+      description: `Comma-separated list of harnesses to install for. One or more of: ${VALID_HARNESSES3.join(", ")}. ` + "Auto-detects installed harnesses if omitted (local install only). Required when using --global.",
       alias: "H"
     },
     global: {
@@ -3132,7 +3301,7 @@ var skillCommand = defineCommand({
     const isUninstall = args.uninstall === true;
     const isGlobal = args.global === true;
     if (isInstall && isUninstall) {
-      console.error(`${c3.red}Error:${c3.reset} Cannot use both --install and --uninstall.`);
+      console.error(`${c4.red}Error:${c4.reset} Cannot use both --install and --uninstall.`);
       process.exit(1);
     }
     if (!isInstall && !isUninstall) {
@@ -3143,26 +3312,26 @@ var skillCommand = defineCommand({
     if (args.harness !== undefined) {
       harnesses = parseHarnessList(args.harness);
       if (harnesses.length === 0) {
-        console.error(`${c3.red}Error: Invalid harness(es) "${args.harness}"${c3.reset}`);
-        console.error(`Must be: ${VALID_HARNESSES2.join(", ")}`);
+        console.error(`${c4.red}Error: Invalid harness(es) "${args.harness}"${c4.reset}`);
+        console.error(`Must be: ${VALID_HARNESSES3.join(", ")}`);
         process.exit(1);
       }
     } else if (isGlobal) {
-      console.error(`${c3.red}Error: --global requires --harness${c3.reset}`);
+      console.error(`${c4.red}Error: --global requires --harness${c4.reset}`);
       console.error(`Example: research skill --global --harness claude --install`);
       process.exit(1);
     }
     if (!isGlobal && harnesses.length === 0) {
       const detected = await detectHarnesses();
       if (detected.length === 0) {
-        console.error(`${c3.red}No harnesses detected.${c3.reset}`);
-        console.error(`Install: ${VALID_HARNESSES2.join(", ")}`);
+        console.error(`${c4.red}No harnesses detected.${c4.reset}`);
+        console.error(`Install: ${VALID_HARNESSES3.join(", ")}`);
         process.exit(1);
       }
       harnesses = detected.map((h2) => h2.name);
     }
     const action = isUninstall ? "Uninstalling" : "Installing";
-    const symbol = isUninstall ? c3.red + "-" + c3.reset : c3.green + "+" + c3.reset;
+    const symbol = isUninstall ? c4.red + "-" + c4.reset : c4.green + "+" + c4.reset;
     console.log(`${symbol} ${action} research.actor ${isGlobal ? "(global)" : ""}`);
     console.log();
     const targets = getInstallTargets(harnesses, isGlobal);
@@ -3177,12 +3346,121 @@ var skillCommand = defineCommand({
           successCount++;
       }
     }
+    if (!isGlobal && !isUninstall) {
+      await updateAgentsMd();
+    }
     console.log();
     if (successCount === totalCount) {
-      console.log(`${c3.green}${s2.check}${c3.reset} Done`);
+      console.log(`${c4.green}${s3.check}${c4.reset} Done`);
     } else {
-      console.log(`${c3.yellow}${successCount}/${totalCount} completed${c3.reset}`);
+      console.log(`${c4.yellow}${successCount}/${totalCount} completed${c4.reset}`);
       process.exit(1);
+    }
+  }
+});
+
+// src/commands/ask.ts
+var VALID_HARNESSES4 = ["opencode", "claude", "codex", "aider", "gemini"];
+function isHarnessName2(value) {
+  return VALID_HARNESSES4.includes(value);
+}
+var askCommand = defineCommand({
+  meta: {
+    name: "ask",
+    description: "Ask a specific question about the codebase. Uses cached analysis if available, otherwise analyzes on-demand."
+  },
+  args: {
+    question: {
+      type: "positional",
+      description: "The question to ask about the codebase",
+      required: true
+    },
+    harness: {
+      type: "string",
+      description: `Harness to use for analysis. One of: ${VALID_HARNESSES4.join(", ")}. Auto-detected if omitted.`,
+      alias: "H"
+    },
+    model: {
+      type: "string",
+      description: "Model to pass to the harness (e.g. claude-opus-4-5, gpt-4o).",
+      alias: "m"
+    },
+    json: {
+      type: "boolean",
+      description: "Output the result as JSON instead of plain text.",
+      alias: "j",
+      default: false
+    }
+  },
+  async run({ args }) {
+    const question = args.question;
+    if (!question || question.trim().length === 0) {
+      console.error("Error: Please provide a question to ask.");
+      console.error('Example: research ask "explain the auth flow"');
+      process.exit(1);
+    }
+    let harnessArg = undefined;
+    let modelArg = args.model;
+    if (args.harness !== undefined) {
+      if (!isHarnessName2(args.harness)) {
+        console.error(`Invalid harness: "${args.harness}". Must be one of: ${VALID_HARNESSES4.join(", ")}`);
+        process.exit(1);
+      }
+      harnessArg = args.harness;
+    } else {
+      const config = await loadConfig();
+      if (config.defaultHarness) {
+        harnessArg = config.defaultHarness;
+      }
+      if (modelArg === undefined && config.defaultModel) {
+        modelArg = config.defaultModel;
+      }
+    }
+    const isJson = args.json === true;
+    const cwd = process.cwd();
+    const repoRoot = await getRepoRoot(cwd);
+    const { gitHash } = await getGitInfo(cwd);
+    const projectKey = deriveProjectKey(repoRoot);
+    const store = new FsStore;
+    const cachedEntry = await store.get({ projectKey, gitHash });
+    const hasCachedAnalysis = cachedEntry !== null;
+    let systemPrompt;
+    if (hasCachedAnalysis) {
+      systemPrompt = `You have access to a cached base analysis of this codebase from commit ${gitHash}. Use it as context to answer the user's specific question accurately and concisely. Focus on answering the question directly - do not generate a general codebase overview unless specifically requested.`;
+    } else {
+      systemPrompt = `No cached analysis available for this codebase. You need to analyze the codebase yourself to answer the user's question. Be thorough but focus specifically on answering their question - don't generate a general codebase overview unless requested.`;
+    }
+    const fullSystemPrompt = hasCachedAnalysis ? `${systemPrompt}
+
+## CACHED BASE ANALYSIS CONTEXT:
+
+${cachedEntry.analysis}
+
+## USER QUESTION:
+
+Answer the following question using the context above. Be specific and concise.` : systemPrompt;
+    const result = await analyze({
+      cwd,
+      force: false,
+      store,
+      ...harnessArg !== undefined ? { harness: harnessArg } : {},
+      ...modelArg !== undefined ? { model: modelArg } : {},
+      systemPrompt: fullSystemPrompt,
+      prompt: question,
+      ...isJson ? { stream: false } : {}
+    });
+    if (isJson) {
+      const output = {
+        answer: result.analysis,
+        fromCache: result.fromCache,
+        gitHash: result.gitHash,
+        projectKey: result.projectKey,
+        runner: result.runner,
+        hadBaseContext: hasCachedAnalysis
+      };
+      console.log(JSON.stringify(output, null, 2));
+    } else {
+      console.log(result.analysis);
     }
   }
 });
@@ -3191,12 +3469,14 @@ var skillCommand = defineCommand({
 var main = defineCommand({
   meta: {
     name: "research",
-    description: "Cached codebase analysis for AI agents. " + "Run `research analyze` to analyze the current repo, " + "or `research skill` to install the agent skill."
+    description: "Cached codebase analysis for AI agents. " + "Run `research analyze` to analyze the current repo, " + "`research ask` to answer specific questions, " + "or `research skill` to install the agent skill."
   },
   subCommands: {
     analyze: analyzeCommand,
     clear: clearCommand,
-    skill: skillCommand
+    skill: skillCommand,
+    config: configCommand,
+    ask: askCommand
   }
 });
 runMain(main);
